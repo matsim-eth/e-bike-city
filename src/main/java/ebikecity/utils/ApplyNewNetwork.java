@@ -6,6 +6,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
@@ -14,6 +15,8 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.filter.NetworkFilterManager;
+import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.population.io.PopulationWriter;
@@ -45,6 +48,17 @@ public class ApplyNewNetwork {
 
 		MatsimNetworkReader netReader = new MatsimNetworkReader(scenarioNew.getNetwork());
 		netReader.readFile(args[2]);
+		
+		NetworkFilterManager n = new NetworkFilterManager(scenarioNew.getNetwork());
+		n.addLinkFilter(new NetworkLinkFilter() {
+			
+			@Override
+			public boolean judgeLink(Link l) {
+				return l.getAllowedModes().contains("car");
+			}
+		});
+		
+		Network nn = n.applyFilters();
 
 		for (Person person : scenario.getPopulation().getPersons().values()) {
 
@@ -60,7 +74,7 @@ public class ApplyNewNetwork {
 			for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
 				if (pe instanceof Activity) {
 					Coord coord = ((Activity) pe).getCoord();
-					Id<Link> linkId = NetworkUtils.getNearestLinkExactly(scenarioNew.getNetwork(), coord).getId();
+					Id<Link> linkId = NetworkUtils.getNearestLinkExactly(nn, coord).getId();
 					((Activity) pe).setLinkId(linkId);
 				}
 			}

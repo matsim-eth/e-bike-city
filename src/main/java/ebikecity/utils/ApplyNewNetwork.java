@@ -93,7 +93,7 @@ public class ApplyNewNetwork {
 			Coord coord = facility.getCoord();
 
 			((ActivityFacilityImpl) facility)
-					.setLinkId(NetworkUtils.getNearestLinkExactly(scenarioNew.getNetwork(), coord).getId());
+					.setLinkId(NetworkUtils.getNearestLinkExactly(nn, coord).getId());
 
 		}
 		

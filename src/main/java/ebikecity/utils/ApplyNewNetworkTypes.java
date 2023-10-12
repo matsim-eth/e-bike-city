@@ -147,23 +147,19 @@ public class ApplyNewNetworkTypes {
 					}
 					else if (scenario.getNetwork().getLinks().get(actLink).getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
 						Id<Link> linkId = NetworkUtils.getNearestLinkExactly(nm, coord).getId();
-						((Activity) pe).setLinkId(linkId);
-						System.out.println("Motorway");	
+						((Activity) pe).setLinkId(linkId);	
 					}
 					else if (scenario.getNetwork().getLinks().get(actLink).getAttributes().getAttribute("osm:way:highway").toString().contains("trunk")) {
 						Id<Link> linkId = NetworkUtils.getNearestLinkExactly(nt, coord).getId();
 						((Activity) pe).setLinkId(linkId);
-						System.out.println("Trunk");
 					}
 					else if (scenario.getNetwork().getLinks().get(actLink).getAttributes().getAttribute("osm:way:highway").toString().contains("primary")) {
 						Id<Link> linkId = NetworkUtils.getNearestLinkExactly(np, coord).getId();
 						((Activity) pe).setLinkId(linkId);
-						System.out.println("Primary");
 					}
 					else {
 						Id<Link> linkId = NetworkUtils.getNearestLinkExactly(nn, coord).getId();
 						((Activity) pe).setLinkId(linkId);
-						System.out.println("Other");
 					}	
 				}
 			}

@@ -19,6 +19,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.replanning.modules.ReRoute;
 import org.matsim.households.Household;
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
@@ -50,7 +51,8 @@ public class AstraConfigurator extends EqasimConfigurator {
 		config.global().setNumberOfThreads(Runtime.getRuntime().availableProcessors());
 
 		for (StrategySettings strategy : config.strategy().getStrategySettings()) {
-			if (strategy.getStrategyName().equals(DiscreteModeChoiceModule.STRATEGY_NAME)) {
+			if (strategy.getStrategyName().equals(DiscreteModeChoiceModule.STRATEGY_NAME) ||
+					strategy.getStrategyName().equals("ReRoute")) {
 				strategy.setWeight(0.05);
 			} else {
 				strategy.setWeight(0.95);

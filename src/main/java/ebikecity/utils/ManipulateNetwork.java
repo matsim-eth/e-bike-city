@@ -157,8 +157,8 @@ public class ManipulateNetwork {
 		Network ncr = r.applyFilters();
 		
 		
-		// example: reduce urban network capacity to 0.5 (s + t + u + r)
-		double red = 0.7;
+		// example: reduce urban network capacity to 0.9 (s + t + u + r)
+		double red = 0.9;
 		reduceCapacity(n, ncs, red);
 		reduceCapacity(n, nct, red);
 		reduceCapacity(n, ncu, red);

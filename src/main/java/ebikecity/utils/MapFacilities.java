@@ -1,5 +1,6 @@
 package ebikecity.utils;
 
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,10 +117,21 @@ public class MapFacilities {
 					
 			@Override
 			public boolean judgeLink(Link l) {
-				return l.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway"); // cover motorway and motorway_link
+				return l.getAttributes().getAttribute("osm:way:highway").toString().equals("motorway"); // only motorway
 			}
 					
 		});
+		
+		// all motorway link links
+				NetworkFilterManager ml = new NetworkFilterManager(scenarioNew.getNetwork());
+				ml.addLinkFilter(new NetworkLinkFilter() {
+							
+					@Override
+					public boolean judgeLink(Link l) {
+						return l.getAttributes().getAttribute("osm:way:highway").toString().equals("motorway_link"); // only motorway_link
+					}
+							
+				});
 				
 		// all trunk links
 		NetworkFilterManager t = new NetworkFilterManager(scenarioNew.getNetwork());
@@ -127,10 +139,21 @@ public class MapFacilities {
 					
 			@Override
 			public boolean judgeLink(Link l) {
-				return l.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk"); // cover trunk and trunk_link
+				return l.getAttributes().getAttribute("osm:way:highway").toString().equals("trunk"); // only trunk
 				}
 					
 		});
+		
+		// all trunk link links
+				NetworkFilterManager tl = new NetworkFilterManager(scenarioNew.getNetwork());
+				tl.addLinkFilter(new NetworkLinkFilter() {
+							
+					@Override
+					public boolean judgeLink(Link l) {
+						return l.getAttributes().getAttribute("osm:way:highway").toString().equals("trunk_link"); // only trunk_link
+						}
+							
+				});
 				
 		// all primary links
 		NetworkFilterManager p = new NetworkFilterManager(scenarioNew.getNetwork());
@@ -149,20 +172,23 @@ public class MapFacilities {
 		Network nn = n.applyFilters();
 				
 		Network nm = m.applyFilters();
+		
+		Network nml = ml.applyFilters();
 			
-		Network nt = t.applyFilters();		
+		Network nt = t.applyFilters();
+		
+		Network ntl = tl.applyFilters();
+		
 		// if there are no trunk links in the new network (but maybe in the network cut by eqasim), 
 		// use motorway subnetwork instead of trunk subnetwork (NEB Strecken)
 		if (nt.getLinks().size() == 0) {
 			nt = nm;
+			ntl = nml;
 			t = m;
-		}
+			tl = ml;
+		}		
 				
-		Network np = p.applyFilters();
-		
-		
-		
-		
+			
 		// map the facilities
 		
 		for (ActivityFacility facility : scenario.getActivityFacilities().getFacilities().values()) {
@@ -175,10 +201,17 @@ public class MapFacilities {
 				
 				Network nmtp;
 				
-				if (roadType.contains("motorway")) {
+				if (roadType.equals("motorway")) {
 					nmtp = m.applyFilters();
 				}
-				else if (roadType.contains("trunk")) {
+				else if (roadType.equals("motorway_link")) {
+					nmtp = ml.applyFilters();
+				}
+				
+				else if (roadType.equals("trunk")) {
+					nmtp = t.applyFilters();
+				}
+				else if (roadType.equals("trunk_link")) {
 					nmtp = t.applyFilters();
 				}
 				else {
@@ -188,7 +221,7 @@ public class MapFacilities {
 				
 				Map<Id<Link>, Double> nearLinks = new HashMap<>();
 				
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < 5; i++) {
 					
 					Link nearestLink = NetworkUtils.getNearestLinkExactly(nmtp, facility.getCoord());
 					
@@ -288,8 +321,7 @@ public class MapFacilities {
 		// write mapped population
 		
 		new PopulationWriter(scenario.getPopulation()).write(args[4]);
-		
-		
+			
 	}
 	
 }

@@ -1,21 +1,28 @@
 package ebikecity.project.mode_choice;
 
 import java.io.IOException;
+
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.eqasim.core.components.config.EqasimConfigGroup;
 import org.eqasim.core.simulation.analysis.EqasimAnalysisModule;
 import org.eqasim.core.simulation.mode_choice.EqasimModeChoiceModule;
 import org.eqasim.switzerland.SwitzerlandConfigurator;
 import org.eqasim.switzerland.mode_choice.SwissModeChoiceModule;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
@@ -26,6 +33,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.ConfigurableQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.router.util.TravelTime;
@@ -41,6 +49,9 @@ import com.google.inject.name.Named;
 
 import ebikecity.project.config.AstraConfigurator;
 import ebikecity.project.travel_time.SmoothingTravelTimeModule;
+
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
+import org.matsim.core.config.groups.QSimConfigGroup;
 
 public class RunBikeSimulation {
 	
@@ -65,6 +76,8 @@ public class RunBikeSimulation {
 		AstraConfigurator.adjustScenario(scenario);
 
 		EqasimConfigGroup eqasimConfig = EqasimConfigGroup.get(config);
+		
+		config.plansCalcRoute().setAccessEgressType( AccessEgressType.accessEgressModeToLink );
 
 		for (Link link : scenario.getNetwork().getLinks().values()) {
 			double maximumSpeed = link.getFreespeed();
@@ -85,25 +98,48 @@ public class RunBikeSimulation {
 		
 		// add allowed mode bike for car links that are not highway or trunk
 		
-		NetworkFilterManager n = new NetworkFilterManager(scenario.getNetwork());
-		n.addLinkFilter(new NetworkLinkFilter() {
-					
-			@Override
-			public boolean judgeLink(Link l) {
-				return l.getAllowedModes().contains("car");
-			}
-		});
+				
 		
-		Network net = n.applyFilters();
-		
-		for (Link carLink : net.getLinks().values())  {
-			String roadType = carLink.getAttributes().getAttribute("osm:way:highway").toString();
+		for (Link link : scenario.getNetwork().getLinks().values()) {
+			if (link.getAllowedModes().contains("car")) {
 			
-			if (!(roadType.contains("motorway") || roadType.contains("trunk"))) {
-				carLink.setAllowedModes(new HashSet<>(Arrays.asList(TransportMode.car,"bike")));
+			// if (net.getLinks().values().contains(link)) {
+				
+				if (!link.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk") &&
+						!link.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
+					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
+					allowedModes.add(BIKE);
+					link.setAllowedModes(allowedModes);
+				}
+				
+			}
+			
+		}
+		
+		for (Person person : scenario.getPopulation().getPersons().values()) {
+
+			
+			for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
+				if (pe instanceof Leg) {
+					if (((Leg) pe).getMode() == BIKE) {
+						((Leg) pe).setRoute(null);
+						// ((Leg) pe).setTravelTime(null);
+					}
+				}
 			}
 		}
 		
+		// set config such that the mode vehicles come from vehicles data:
+		
+		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
+		
+		
+//		System.out.println("@me");
+//		for (VehicleType vehType : scenario.getVehicles().getVehicleTypes().values()) {
+//			System.out.println(vehType.getId().toString());
+//			}
+				
+			
 		// create all vehicleTypes requested by planscalcroute networkModes
 
 		final VehiclesFactory vf = VehicleUtils.getFactory();
@@ -112,12 +148,21 @@ public class RunBikeSimulation {
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create("car_passenger", VehicleType.class))
 				.setMaximumVelocity(120.0/3.6));
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create(TransportMode.truck, VehicleType.class))
-				// look this up later to be consistent
+		// look this up later to be consistent
 				.setMaximumVelocity(80.0/3.6).setPcuEquivalents(2.5));
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create(BIKE, VehicleType.class))
 				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25)); 
 		
-		
+//		for (VehicleType vehType : scenario.getVehicles().getVehicleTypes().values()) {
+//			System.out.println(vehType.getId().toString());
+//			}
+//				
+//		try {
+//			java.util.concurrent.TimeUnit.SECONDS.sleep(10);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 		// EqasimLinkSpeedCalculator deactivated!
 
@@ -173,21 +218,21 @@ public class RunBikeSimulation {
 				
 				// changed for MATSim 13
 				// this.installOverridingQSimModule( new AbstractQSimModule(){
-				this.installQSimModule( new AbstractQSimModule(){
-					@Inject EventsManager events;
-					@Inject Scenario scenario;
-					@Override protected void configureQSim(){
-						// instantiate the configurable network factory:
-						final ConfigurableQNetworkFactory factory = new ConfigurableQNetworkFactory(events, scenario);
-
-						// set the speed calculation as declared above in the preparation:
-						factory.setLinkSpeedCalculator( ( qVehicle, link, time ) -> getMaxSpeedFromVehicleAndLink( link, time, qVehicle.getVehicle() ) );
-
-						// set (= overwrite) the QNetworkFactory with the factory defined here:
-						bind( QNetworkFactory.class ).toInstance(factory );
-						// (this is a bit dangerous since other pieces of code might overwrite the QNetworkFactory as well.  In the longer run, need to find a different solution.)
-					}
-				} );
+//				this.installQSimModule( new AbstractQSimModule(){
+//					@Inject EventsManager events;
+//					@Inject Scenario scenario;
+//					@Override protected void configureQSim(){
+//						// instantiate the configurable network factory:
+//						final ConfigurableQNetworkFactory factory = new ConfigurableQNetworkFactory(events, scenario);
+//
+//						// set the speed calculation as declared above in the preparation:
+//						factory.setLinkSpeedCalculator( ( qVehicle, link, time ) -> getMaxSpeedFromVehicleAndLink( link, time, qVehicle.getVehicle() ) );
+//
+//						// set (= overwrite) the QNetworkFactory with the factory defined here:
+//						bind( QNetworkFactory.class ).toInstance(factory );
+//						// (this is a bit dangerous since other pieces of code might overwrite the QNetworkFactory as well.  In the longer run, need to find a different solution.)
+//					}
+//				} );
 			}
 		} ) ;
 

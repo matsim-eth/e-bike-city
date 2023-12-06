@@ -69,36 +69,8 @@ public class RunBikeSimulation {
 		cmd.applyConfiguration(config);
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
-
-		SwitzerlandConfigurator.configureScenario(scenario);
-		ScenarioUtils.loadScenario(scenario);
-		SwitzerlandConfigurator.adjustScenario(scenario);
-		AstraConfigurator.adjustScenario(scenario);
-
-		EqasimConfigGroup eqasimConfig = EqasimConfigGroup.get(config);
-		
-		config.plansCalcRoute().setAccessEgressType( AccessEgressType.accessEgressModeToLink );
-
-		for (Link link : scenario.getNetwork().getLinks().values()) {
-			double maximumSpeed = link.getFreespeed();
-			boolean isMajor = true;
-			
-			for (Link other : link.getToNode().getInLinks().values()) {
-				if (other.getCapacity() >= link.getCapacity()) {
-					isMajor = false;
-				}
-			}
-
-			if (!isMajor && link.getToNode().getInLinks().size() > 1) {
-				double travelTime = link.getLength() / maximumSpeed;
-				travelTime += eqasimConfig.getCrossingPenalty();
-				link.setFreespeed(link.getLength() / travelTime);
-			}
-		}
 		
 		// add allowed mode bike for car links that are not highway or trunk
-		
-				
 		
 		for (Link link : scenario.getNetwork().getLinks().values()) {
 			if (link.getAllowedModes().contains("car")) {
@@ -128,6 +100,36 @@ public class RunBikeSimulation {
 				}
 			}
 		}
+		
+		
+
+		SwitzerlandConfigurator.configureScenario(scenario);
+		ScenarioUtils.loadScenario(scenario);
+		SwitzerlandConfigurator.adjustScenario(scenario);
+		AstraConfigurator.adjustScenario(scenario);
+
+		EqasimConfigGroup eqasimConfig = EqasimConfigGroup.get(config);
+		
+		config.plansCalcRoute().setAccessEgressType( AccessEgressType.accessEgressModeToLink );
+
+		for (Link link : scenario.getNetwork().getLinks().values()) {
+			double maximumSpeed = link.getFreespeed();
+			boolean isMajor = true;
+			
+			for (Link other : link.getToNode().getInLinks().values()) {
+				if (other.getCapacity() >= link.getCapacity()) {
+					isMajor = false;
+				}
+			}
+
+			if (!isMajor && link.getToNode().getInLinks().size() > 1) {
+				double travelTime = link.getLength() / maximumSpeed;
+				travelTime += eqasimConfig.getCrossingPenalty();
+				link.setFreespeed(link.getLength() / travelTime);
+			}
+		}
+		
+			
 		
 		// set config such that the mode vehicles come from vehicles data:
 		
@@ -210,7 +212,14 @@ public class RunBikeSimulation {
 						double actualSpeed = Math.min( speedFromObservation, maxSpeedFromVehicleAndLink );
 
 						// the link travel time is computed from that speed:
-						return link.getLength()/actualSpeed ;
+						// return link.getLength()/actualSpeed ;
+						String vod = link.getAttributes().getAttribute("osm:way:cost_ln_desc_cycling_>").toString();
+						double vodd = 1000000000;
+						if (!vod.equals("inf")) {
+							vodd = Double.parseDouble(vod);
+						}
+						
+						return vodd/actualSpeed;
 					}
 				} );
 

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.CarUtilityEstimator;
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
-import org.eqasim.core.simulation.mode_choice.utilities.predictors.CarPredictor;
 import org.eqasim.core.simulation.mode_choice.utilities.variables.CarVariables;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
@@ -14,6 +13,7 @@ import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
 import com.google.inject.Inject;
 
 import ebikecity.project.mode_choice.AstraModeParameters;
+import ebikecity.project.mode_choice.predictors.AccessEgressCarPredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
 import ebikecity.project.mode_choice.predictors.AstraTripPredictor;
 import ebikecity.project.mode_choice.variables.AstraPersonVariables;
@@ -25,10 +25,10 @@ public class AstraCarUtilityEstimator extends CarUtilityEstimator {
 	private final AstraModeParameters parameters;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
-	private final CarPredictor predictor;
+	private final AccessEgressCarPredictor predictor;
 
 	@Inject
-	public AstraCarUtilityEstimator(AstraModeParameters parameters, CarPredictor predictor,
+	public AstraCarUtilityEstimator(AstraModeParameters parameters, AccessEgressCarPredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		super(parameters, predictor);
 

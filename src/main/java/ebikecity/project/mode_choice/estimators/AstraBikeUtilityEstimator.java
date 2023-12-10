@@ -3,6 +3,7 @@ package ebikecity.project.mode_choice.estimators;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
+import org.eqasim.core.simulation.mode_choice.utilities.predictors.BikePredictor;
 import org.eqasim.switzerland.mode_choice.utilities.estimators.SwissBikeUtilityEstimator;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
@@ -11,7 +12,8 @@ import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
 import com.google.inject.Inject;
 
 import ebikecity.project.mode_choice.AstraModeParameters;
-import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
+import ebikecity.project.mode_choice.predictors.AccessEgressBikePredictor;
+// import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
 import ebikecity.project.mode_choice.predictors.AstraTripPredictor;
 import ebikecity.project.mode_choice.variables.AstraBikeVariables;
@@ -22,14 +24,16 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 	static public final String NAME = "AstraBikeEstimator";
 
 	private final AstraModeParameters parameters;
-	private final AstraBikePredictor predictor;
+	private final AccessEgressBikePredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
+	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
-		super(parameters, personPredictor.delegate, predictor.delegate);
+		
+		// super(parameters, personPredictor.delegate, predictor.delegate);
+		super(parameters, personPredictor.delegate, predictor);
 
 		this.parameters = parameters;
 		this.predictor = predictor;
@@ -53,7 +57,7 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 
 	@Override
 	public double estimateUtility(Person person, DiscreteModeChoiceTrip trip, List<? extends PlanElement> elements) {
-		AstraBikeVariables variables = predictor.predictVariables(person, trip, elements);
+		AstraBikeVariables variables = (AstraBikeVariables) predictor.predictVariables(person, trip, elements);
 		AstraPersonVariables personVariables = personPredictor.predictVariables(person, trip, elements);
 		AstraTripVariables tripVariables = tripPredictor.predictVariables(person, trip, elements);
 

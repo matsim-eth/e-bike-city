@@ -20,6 +20,7 @@ import ebikecity.project.mode_choice.estimators.AstraBikeUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraCarUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraPtUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraWalkUtilityEstimator;
+import ebikecity.project.mode_choice.predictors.AccessEgressBikePredictor;
 import ebikecity.project.mode_choice.predictors.AccessEgressCarPredictor;
 import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
@@ -42,7 +43,8 @@ public class AstraModule extends AbstractEqasimExtension {
 		bindUtilityEstimator(AstraWalkUtilityEstimator.NAME).to(AstraWalkUtilityEstimator.class);
 
 		bind(AstraPtPredictor.class);
-		bind(AstraBikePredictor.class);
+		//bind(AstraBikePredictor.class);
+		bind(AccessEgressBikePredictor.class);
 		bind(AstraWalkPredictor.class);
 		bind(AstraPersonPredictor.class);
 		bind(AstraTripPredictor.class);

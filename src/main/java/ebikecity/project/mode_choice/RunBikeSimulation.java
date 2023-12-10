@@ -155,16 +155,6 @@ public class RunBikeSimulation {
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create(BIKE, VehicleType.class))
 				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25)); 
 		
-//		for (VehicleType vehType : scenario.getVehicles().getVehicleTypes().values()) {
-//			System.out.println(vehType.getId().toString());
-//			}
-//				
-//		try {
-//			java.util.concurrent.TimeUnit.SECONDS.sleep(10);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 
 		// EqasimLinkSpeedCalculator deactivated!
 
@@ -213,7 +203,7 @@ public class RunBikeSimulation {
 
 						// the link travel time is computed from that speed:
 						// return link.getLength()/actualSpeed ;
-						String vod = link.getAttributes().getAttribute("osm:way:cost_ln_desc_cycling_>").toString();
+						String vod = link.getAttributes().getAttribute("osm:way:cost_cycling_>").toString();
 						double vodd = 1000000000;
 						if (!vod.equals("inf")) {
 							vodd = Double.parseDouble(vod);

@@ -53,6 +53,7 @@ public class AstraConfigurator extends EqasimConfigurator {
 		for (StrategySettings strategy : config.strategy().getStrategySettings()) {
 			if (strategy.getStrategyName().equals(DiscreteModeChoiceModule.STRATEGY_NAME) ||
 					strategy.getStrategyName().equals("ReRoute")) {
+				// strategy.setWeight(1.0);
 				strategy.setWeight(0.05);
 			} else {
 				strategy.setWeight(0.95);

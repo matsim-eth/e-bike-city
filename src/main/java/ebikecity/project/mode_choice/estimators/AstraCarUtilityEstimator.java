@@ -1,9 +1,11 @@
 package ebikecity.project.mode_choice.estimators;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.CarUtilityEstimator;
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
+import org.eqasim.core.simulation.mode_choice.utilities.predictors.CarPredictor;
 import org.eqasim.core.simulation.mode_choice.utilities.variables.CarVariables;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
@@ -25,10 +27,12 @@ public class AstraCarUtilityEstimator extends CarUtilityEstimator {
 	private final AstraModeParameters parameters;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
-	private final AccessEgressCarPredictor predictor;
+	// private final AccessEgressCarPredictor predictor;
+	private final CarPredictor predictor;
 
 	@Inject
-	public AstraCarUtilityEstimator(AstraModeParameters parameters, AccessEgressCarPredictor predictor,
+//	public AstraCarUtilityEstimator(AstraModeParameters parameters, AccessEgressCarPredictor predictor,
+	public AstraCarUtilityEstimator(AstraModeParameters parameters, CarPredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		super(parameters, predictor);
 
@@ -80,6 +84,20 @@ public class AstraCarUtilityEstimator extends CarUtilityEstimator {
 
 		Leg leg = (Leg) elements.get(0);
 		leg.getAttributes().putAttribute("isNew", true);
+		
+		// List that stores information to be mapped onto trip
+		List<String> store = new ArrayList<String>();
+		store.add(person.getId().toString());
+		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1)); 
+		store.add(Double.toString(trip.getDepartureTime()));
+		store.add(trip.getOriginActivity().getFacilityId().toString());
+		store.add("car");
+		store.add(Double.toString(leg.getTravelTime().seconds()));
+		store.add(Double.toString(utility));
+		
+		// How can I make all the estimators add their store into the same container??
+		UtilityContainer container = UtilityContainer.getInstance();
+		container.getUtilites().add(store);
 
 		return utility;
 	}

@@ -1,5 +1,6 @@
 package ebikecity.project.mode_choice.estimators;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
@@ -117,6 +118,22 @@ public class AstraPtUtilityEstimator extends PtUtilityEstimator {
 		utility += estimateWorkUtility(tripVariables);
 		utility += estimateHeadwayUtility(variables);
 		utility += estimateOvgkUtility(variables);
+		
+		// List that stores information to be mapped onto trip
+		List<String> store = new ArrayList<String>();
+		store.add(person.getId().toString());
+		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
+		store.add(Double.toString(trip.getDepartureTime()));
+		store.add(trip.getOriginActivity().getFacilityId().toString());
+		store.add("pt");
+		store.add(Double.toString((variables.accessEgressTime_min
+									+ variables.inVehicleTime_min
+									+ variables.waitingTime_min) * 60));
+		store.add(Double.toString(utility));
+				
+		// How can I make all the estimators add their store into the same container??
+		UtilityContainer container = UtilityContainer.getInstance();
+		container.getUtilites().add(store);
 
 		return utility;
 	}

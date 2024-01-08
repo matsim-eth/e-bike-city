@@ -12,27 +12,26 @@ import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
 
 import com.google.inject.Inject;
 
-import ebikecity.project.mode_choice.AstraModeParameters;
+import ebikecity.project.mode_choice.EBikeModeParameters;
 import ebikecity.project.mode_choice.predictors.AccessEgressBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
-// import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
 import ebikecity.project.mode_choice.predictors.AstraTripPredictor;
 import ebikecity.project.mode_choice.variables.AstraBikeVariables;
 import ebikecity.project.mode_choice.variables.AstraPersonVariables;
 import ebikecity.project.mode_choice.variables.AstraTripVariables;
 
-public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
-	static public final String NAME = "AstraBikeEstimator";
+public class EBikeBikeUtilityEstimator extends SwissBikeUtilityEstimator {
+	static public final String NAME = "EBikeBikeEstimator";
 
-	private final AstraModeParameters parameters;
+	private final EBikeModeParameters parameters;
 	private final AccessEgressBikePredictor predictor;
 	// private final AstraBikePredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
+	public EBikeBikeUtilityEstimator(EBikeModeParameters parameters, AccessEgressBikePredictor predictor,
 	// public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		

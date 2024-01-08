@@ -27,12 +27,12 @@ public class AstraCarUtilityEstimator extends CarUtilityEstimator {
 	private final AstraModeParameters parameters;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
-	// private final AccessEgressCarPredictor predictor;
-	private final CarPredictor predictor;
+	private final AccessEgressCarPredictor predictor;
+	// private final CarPredictor predictor;
 
 	@Inject
-//	public AstraCarUtilityEstimator(AstraModeParameters parameters, AccessEgressCarPredictor predictor,
-	public AstraCarUtilityEstimator(AstraModeParameters parameters, CarPredictor predictor,
+	public AstraCarUtilityEstimator(AstraModeParameters parameters, AccessEgressCarPredictor predictor,
+//	public AstraCarUtilityEstimator(AstraModeParameters parameters, CarPredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		super(parameters, predictor);
 

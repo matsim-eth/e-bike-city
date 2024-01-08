@@ -12,27 +12,26 @@ import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
 
 import com.google.inject.Inject;
 
-import ebikecity.project.mode_choice.AstraModeParameters;
+import ebikecity.project.mode_choice.EBikeModeParameters;
 import ebikecity.project.mode_choice.predictors.AccessEgressBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
-// import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
 import ebikecity.project.mode_choice.predictors.AstraTripPredictor;
 import ebikecity.project.mode_choice.variables.AstraBikeVariables;
 import ebikecity.project.mode_choice.variables.AstraPersonVariables;
 import ebikecity.project.mode_choice.variables.AstraTripVariables;
 
-public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
-	static public final String NAME = "AstraBikeEstimator";
+public class EBikeEBikeUtilityEstimator extends SwissBikeUtilityEstimator {
+	static public final String NAME = "EBikeEBikeEstimator";
 
-	private final AstraModeParameters parameters;
+	private final EBikeModeParameters parameters;
 	private final AccessEgressBikePredictor predictor;
 	// private final AstraBikePredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
+	public EBikeEBikeUtilityEstimator(EBikeModeParameters parameters, AccessEgressBikePredictor predictor,
 	// public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		
@@ -52,11 +51,11 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 	}
 
 	protected double estimateAgeUtility(AstraPersonVariables variables) {
-		return variables.age_a >= 60 ? parameters.astraBike.betaAgeOver60 : 0.0;
+		return variables.age_a >= 60 ? parameters.ebike.betaAgeOver60 : 0.0;
 	}
 
 	protected double estimateWorkUtility(AstraTripVariables variables) {
-		return variables.isWork ? parameters.astraBike.betaWork : 0.0;
+		return variables.isWork ? parameters.ebike.betaWork : 0.0;
 	}
 
 	@Override

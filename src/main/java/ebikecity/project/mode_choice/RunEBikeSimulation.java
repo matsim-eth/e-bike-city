@@ -3,7 +3,6 @@ package ebikecity.project.mode_choice;
 import java.io.IOException;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,30 +11,19 @@ import org.eqasim.core.simulation.analysis.EqasimAnalysisModule;
 import org.eqasim.core.simulation.mode_choice.EqasimModeChoiceModule;
 import org.eqasim.switzerland.SwitzerlandConfigurator;
 import org.eqasim.switzerland.mode_choice.SwissModeChoiceModule;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.mobsim.qsim.qnetsimengine.ConfigurableQNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.filter.NetworkFilterManager;
-import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
@@ -54,7 +42,7 @@ import ebikecity.project.travel_time.SmoothingTravelTimeModule;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
 import org.matsim.core.config.groups.QSimConfigGroup;
 
-public class RunBikeSimulation {
+public class RunEBikeSimulation {
 	
 	
 	private static final String BIKE=TransportMode.bike;
@@ -73,21 +61,22 @@ public class RunBikeSimulation {
 		
 		// add allowed mode bike for car links that are not highway or trunk
 		
-		for (Link link : scenario.getNetwork().getLinks().values()) {
-			if (link.getAllowedModes().contains("car")) {
-			
-			// if (net.getLinks().values().contains(link)) {
-				
-				if (!link.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk") &&
-						!link.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
-					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
-					allowedModes.add(BIKE);
-					link.setAllowedModes(allowedModes);
-				}
-				
-			}
-			
-		}
+//		for (Link link : scenario.getNetwork().getLinks().values()) {
+//			if (link.getAllowedModes().contains("car")) {
+//			
+//			// if (net.getLinks().values().contains(link)) {
+//				
+//				if (!link.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk") &&
+//						!link.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
+//					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
+//					allowedModes.add(BIKE);
+//					allowedModes.add("ebike");
+//					link.setAllowedModes(allowedModes);
+//				}
+//				
+//			}
+//			
+//		}
 		
 		for (Person person : scenario.getPopulation().getPersons().values()) {
 
@@ -153,9 +142,10 @@ public class RunBikeSimulation {
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create(TransportMode.truck, VehicleType.class))
 		// look this up later to be consistent
 				.setMaximumVelocity(80.0/3.6).setPcuEquivalents(2.5));
-		// cannot set networkMode to bike, why???
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create(BIKE, VehicleType.class))
-				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25));
+				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25)); 
+		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create("ebike", VehicleType.class))
+				.setMaximumVelocity(25.0/3.6).setPcuEquivalents(0.25));		
 
 		// EqasimLinkSpeedCalculator deactivated!
 
@@ -213,6 +203,33 @@ public class RunBikeSimulation {
 						return vodd/actualSpeed;
 					}
 				} );
+				
+				this.addTravelTimeBinding( "ebike" ).toInstance( new TravelTime(){
+					@Inject @Named("ebike") TravelTimeCalculator eBikeCalculator ;
+					// (not very obvious why this is the correct syntax.  kai, jan'23)
+
+					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
+
+						// we get the max speed from vehicle and link, as defined in the preparation above:
+						final double maxSpeedFromVehicleAndLink = getMaxSpeedFromVehicleAndLink( link, time, vehicle );
+
+						// we also get the speed from observation:
+						double speedFromObservation = eBikeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
+
+						// we compute the min of the two:
+						double actualSpeed = Math.min( speedFromObservation, maxSpeedFromVehicleAndLink );
+
+						// the link travel time is computed from that speed:
+						// return link.getLength()/actualSpeed ;
+						String vod = link.getAttributes().getAttribute("osm:way:cost_cycling_>").toString();
+						double vodd = 1000000000;
+						if (!vod.equals("inf")) {
+							vodd = Double.parseDouble(vod);
+						}
+						
+						return vodd/actualSpeed;
+					}
+				} );
 
 				// make the qsim such that bicycle son bicycle expressways are faster than their normal speed:
 				
@@ -238,6 +255,20 @@ public class RunBikeSimulation {
 		
 		controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
 
+		// controler.addControlerListener(new EBikeControlerListener(scenario));
+		
+//		controler.addOverridingModule(new AbstractModule() {
+//            @Override
+//            public void install() {
+//                //add an instance of this class as ControlerListener
+//                this.addControlerListenerBinding().to(EBikeControlerListener.class);
+//
+//                // also bind an event handler which will be needed in the controler listener:
+//                this.bind(scenario.getClass());
+//            }
+//        });
+
+		
 		controler.run();
 	}
 }

@@ -59,25 +59,6 @@ public class RunEBikeSimulation {
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		
-		// add allowed mode bike for car links that are not highway or trunk
-		
-//		for (Link link : scenario.getNetwork().getLinks().values()) {
-//			if (link.getAllowedModes().contains("car")) {
-//			
-//			// if (net.getLinks().values().contains(link)) {
-//				
-//				if (!link.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk") &&
-//						!link.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
-//					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
-//					allowedModes.add(BIKE);
-//					allowedModes.add("ebike");
-//					link.setAllowedModes(allowedModes);
-//				}
-//				
-//			}
-//			
-//		}
-		
 		for (Person person : scenario.getPopulation().getPersons().values()) {
 
 			
@@ -123,14 +104,7 @@ public class RunEBikeSimulation {
 		
 		// set config such that the mode vehicles come from vehicles data:
 		
-		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
-		
-		
-//		System.out.println("@me");
-//		for (VehicleType vehType : scenario.getVehicles().getVehicleTypes().values()) {
-//			System.out.println(vehType.getId().toString());
-//			}
-				
+		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );	
 			
 		// create all vehicleTypes requested by planscalcroute networkModes
 
@@ -140,8 +114,8 @@ public class RunEBikeSimulation {
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create("car_passenger", VehicleType.class))
 				.setMaximumVelocity(120.0/3.6));
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create(TransportMode.truck, VehicleType.class))
-		// look this up later to be consistent
 				.setMaximumVelocity(80.0/3.6).setPcuEquivalents(2.5));
+		// cannot set networkMode to bike, but works anyway (bikes and ebikes use paths, car not)
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create(BIKE, VehicleType.class))
 				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25)); 
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create("ebike", VehicleType.class))
@@ -257,16 +231,7 @@ public class RunEBikeSimulation {
 
 		// controler.addControlerListener(new EBikeControlerListener(scenario));
 		
-//		controler.addOverridingModule(new AbstractModule() {
-//            @Override
-//            public void install() {
-//                //add an instance of this class as ControlerListener
-//                this.addControlerListenerBinding().to(EBikeControlerListener.class);
-//
-//                // also bind an event handler which will be needed in the controler listener:
-//                this.bind(scenario.getClass());
-//            }
-//        });
+
 
 		
 		controler.run();

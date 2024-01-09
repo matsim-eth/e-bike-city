@@ -11,7 +11,9 @@ import org.eqasim.core.simulation.calibration.CalibrationConfigGroup;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contribs.discrete_mode_choice.modules.DiscreteModeChoiceModule;
 import org.matsim.contribs.discrete_mode_choice.modules.config.DiscreteModeChoiceConfigGroup;
 import org.matsim.core.config.CommandLine;
@@ -110,12 +112,20 @@ public class AstraConfigurator extends EqasimConfigurator {
 					if (random.nextDouble() > astraConfig.getBikeAvailability()) {
 						person.getAttributes().putAttribute("bikeAvailability", "FOR_NONE");
 					}
-					else {
-						person.getAttributes().putAttribute("bikeAvailability", "EBIKE");
-//						if (random.nextDouble() < astraConfig.getEBikeAvailability()) {
-//							person.getAttributes().putAttribute("bikeAvailability", "EBIKE");
-//						}
-					}
+				}
+				if (!person.getAttributes().getAttribute("bikeAvailability").equals("FOR_NONE")) {
+//						person.getAttributes().putAttribute("bikeAvailability", "EBIKE");
+						if (random.nextDouble() <= astraConfig.getEBikeAvailability()) {
+							person.getAttributes().putAttribute("bikeAvailability", "EBIKE");
+							
+							for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
+								if (pe instanceof Leg) {
+									if (((Leg) pe).getMode() == "bike") {
+										((Leg) pe).setMode("ebike");
+									}
+								}	
+							}
+						}
 				}
 			}
 		}

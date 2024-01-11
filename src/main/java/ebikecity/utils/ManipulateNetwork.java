@@ -158,11 +158,14 @@ public class ManipulateNetwork {
 		
 		
 		// example: reduce urban network capacity to 0.9 (s + t + u + r)
-		double red = 0.9;
-		reduceCapacity(n, ncs, red);
-		reduceCapacity(n, nct, red);
-		reduceCapacity(n, ncu, red);
-		reduceCapacity(n, ncr, red);
+//		double red = 0.9;
+//		reduceCapacity(n, ncs, red);
+//		reduceCapacity(n, nct, red);
+//		reduceCapacity(n, ncu, red);
+//		reduceCapacity(n, ncr, red);
+		
+		double red = 0.25;
+		reduceCapacity(n, nc, red);
 
 			
 		NetworkWriter netWriter = new NetworkWriter(n);

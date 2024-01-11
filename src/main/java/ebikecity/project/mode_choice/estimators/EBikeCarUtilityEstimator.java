@@ -93,7 +93,7 @@ public class EBikeCarUtilityEstimator extends CarUtilityEstimator {
 		store.add(Double.toString(trip.getDepartureTime()));
 		store.add(trip.getOriginActivity().getFacilityId().toString());
 		store.add("car");
-		store.add(Double.toString(leg.getTravelTime().seconds()));
+		store.add(Double.toString(variables.travelTime_min * 60));
 		store.add(Double.toString(utility));
 		
 		// How can I make all the estimators add their store into the same container??

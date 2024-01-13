@@ -1,0 +1,107 @@
+package ebikecity.utils;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.contribs.discrete_mode_choice.components.tour_finder.ActivityTourFinder;
+import org.matsim.contribs.discrete_mode_choice.components.tour_finder.TourFinder;
+import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
+import org.matsim.contribs.discrete_mode_choice.modules.config.ActivityTourFinderConfigGroup;
+import org.matsim.contribs.discrete_mode_choice.modules.config.DiscreteModeChoiceConfigGroup;
+import org.matsim.core.config.CommandLine;
+import org.matsim.core.config.CommandLine.ConfigurationException;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.contribs.discrete_mode_choice.replanning.TripListConverter;
+
+import ebikecity.project.config.AstraConfigurator;
+
+public class TripsToursCount {
+	
+	// rewrite all plans that are set to mode car to walk to start the simulation with empty roads
+	// change only inside agents, if mode choice for outside agents is supposed to be deactivated
+
+	public static void main(String[] args) throws IOException, InterruptedException, ConfigurationException {
+		CommandLine cmd = new CommandLine.Builder(args) //
+				.requireOptions("config-path") //
+				.allowPrefixes( "mode-parameter", "cost-parameter") //
+				.build();
+		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), AstraConfigurator.getConfigGroups());
+		
+		Scenario scenario = ScenarioUtils.createMutableScenario(config);
+
+		ScenarioUtils.loadScenario(scenario);
+		
+		TripListConverter tripListConverter = new TripListConverter();
+		
+		DiscreteModeChoiceConfigGroup dmcConfig = (DiscreteModeChoiceConfigGroup) config.getModules()
+				.get(DiscreteModeChoiceConfigGroup.GROUP_NAME);
+		
+		ActivityTourFinderConfigGroup tfConfig = dmcConfig.getActivityTourFinderConfigGroup();
+		TourFinder tourFinder = new ActivityTourFinder(tfConfig.getActivityTypes());
+		
+		String outputDirectory = config.controler().getOutputDirectory();
+		
+		File file = new File(outputDirectory+"/tour_sizes.csv");
+		
+		String[] headers = {"person", "tour", "n_trips", "mode", "origin", "destination", "sum_eucl_dist"};
+		
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            // Write headers
+            for (int i = 0; i < headers.length; i++) {
+                writer.write(headers[i]);
+                if (i < headers.length - 1) {
+                    writer.write(",");
+                }
+            }
+            writer.newLine();
+            
+            for (Person person : scenario.getPopulation().getPersons().values()) {
+    			List<DiscreteModeChoiceTrip> trips = tripListConverter.convert(person.getSelectedPlan());
+    			List<List<DiscreteModeChoiceTrip>> tours = tourFinder.findTours(trips);
+    			for (int i = 0; i < tours.size(); i++) {
+    				List<DiscreteModeChoiceTrip> tour = tours.get(i);
+    				DiscreteModeChoiceTrip initialTrip = tour.get(0);
+    				DiscreteModeChoiceTrip finalTrip = tour.get(tour.size()-1);
+    				Double tourLength = 0.0;
+    				for (DiscreteModeChoiceTrip trip : tour) {
+    					tourLength = tourLength+
+    							CoordUtils.calcEuclideanDistance(trip.getOriginActivity().getCoord(),
+    									trip.getDestinationActivity().getCoord());
+    				}
+    					
+    				
+    				// Write rows
+    			    writer.write(person.getId().toString()); 
+    			    writer.write(",");
+    			    writer.write(Integer.toString(i));
+    			    writer.write(",");
+    			    writer.write(Integer.toString(tour.size()));
+    			    writer.write(",");
+    			    writer.write(initialTrip.getInitialMode().toString());
+    			    writer.write(",");
+    			    writer.write(initialTrip.getOriginActivity().getType());
+    			    writer.write(",");
+    			    writer.write(finalTrip.getDestinationActivity().getType());
+    			    writer.write(",");
+    			    writer.write(Double.toString(tourLength));
+    			    writer.newLine();	
+    			}
+    				
+    		}
+    	}
+		catch (IOException e) {
+            e.printStackTrace();
+        }
+		
+		
+	}
+}
+

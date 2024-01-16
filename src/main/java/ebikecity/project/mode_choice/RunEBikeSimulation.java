@@ -18,6 +18,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.contribs.discrete_mode_choice.modules.config.DiscreteModeChoiceConfigGroup;
 import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
@@ -38,9 +39,11 @@ import com.google.inject.name.Named;
 import ebikecity.project.config.AstraConfigurator;
 import ebikecity.project.mode_choice.estimators.UtilityControlerListener;
 import ebikecity.project.travel_time.SmoothingTravelTimeModule;
+import ebikecity.project.travel_time.TimeBinControlerListener;
 
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
 
 public class RunEBikeSimulation {
 	
@@ -229,10 +232,10 @@ public class RunEBikeSimulation {
 		
 		controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
 
-		// controler.addControlerListener(new EBikeControlerListener(scenario));
 		
-
-
+		TravelTimeCalculatorConfigGroup ttcConfig = (TravelTimeCalculatorConfigGroup) config.getModules()
+				.get(TravelTimeCalculatorConfigGroup.GROUPNAME);
+		controler.addControlerListener(new TimeBinControlerListener(ttcConfig));
 		
 		controler.run();
 	}

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.matsim.api.core.v01.Scenario;
@@ -51,19 +52,20 @@ public class TripsToursCount {
 		
 		File file = new File(outputDirectory+"/tour_sizes.csv");
 		
-		String[] headers = {"person", "tour", "n_trips", "mode", "origin", "destination", "sum_eucl_dist"};
+		String[] headers = {"person", "tour", "n_trips", "mode", "origin", "destination", "sum_eucl_dist", "trip_ids"};
 		
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             // Write headers
             for (int i = 0; i < headers.length; i++) {
                 writer.write(headers[i]);
                 if (i < headers.length - 1) {
-                    writer.write(",");
+                    writer.write(";");
                 }
             }
             writer.newLine();
             
             for (Person person : scenario.getPopulation().getPersons().values()) {
+            	int next_trip = 1;
     			List<DiscreteModeChoiceTrip> trips = tripListConverter.convert(person.getSelectedPlan());
     			List<List<DiscreteModeChoiceTrip>> tours = tourFinder.findTours(trips);
     			for (int i = 0; i < tours.size(); i++) {
@@ -71,28 +73,34 @@ public class TripsToursCount {
     				DiscreteModeChoiceTrip initialTrip = tour.get(0);
     				DiscreteModeChoiceTrip finalTrip = tour.get(tour.size()-1);
     				Double tourLength = 0.0;
+    				String trip_ids = "[";
     				for (DiscreteModeChoiceTrip trip : tour) {
     					tourLength = tourLength+
     							CoordUtils.calcEuclideanDistance(trip.getOriginActivity().getCoord(),
     									trip.getDestinationActivity().getCoord());
+    					trip_ids = trip_ids + person.getId().toString() + "_" + Integer.toString(next_trip) + ", ";
+    					next_trip++;
     				}
+    				trip_ids = trip_ids.substring(0, trip_ids.length() - 2) + "]";
     					
     				
     				// Write rows
     			    writer.write(person.getId().toString()); 
-    			    writer.write(",");
+    			    writer.write(";");
     			    writer.write(Integer.toString(i));
-    			    writer.write(",");
+    			    writer.write(";");
     			    writer.write(Integer.toString(tour.size()));
-    			    writer.write(",");
+    			    writer.write(";");
     			    writer.write(initialTrip.getInitialMode().toString());
-    			    writer.write(",");
+    			    writer.write(";");
     			    writer.write(initialTrip.getOriginActivity().getType());
-    			    writer.write(",");
+    			    writer.write(";");
     			    writer.write(finalTrip.getDestinationActivity().getType());
-    			    writer.write(",");
+    			    writer.write(";");
     			    writer.write(Double.toString(tourLength));
-    			    writer.newLine();	
+    			    writer.write(";");
+    			    writer.write(trip_ids);
+    			    writer.newLine();
     			}
     				
     		}

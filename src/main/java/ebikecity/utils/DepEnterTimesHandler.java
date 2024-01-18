@@ -3,7 +3,9 @@ package ebikecity.utils;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.matsim.api.core.v01.events.PersonDepartureEvent;
 import org.matsim.api.core.v01.events.VehicleEntersTrafficEvent;
@@ -30,11 +32,11 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 	}
 	
 	private List<MinimalEvent> personDepartureEvents;
-    private List<MinimalEvent> vehicleEntersTrafficEvents;
+	private Map<String, List<MinimalEvent>> vehicleEntersTrafficMap;
     
     public DepEnterTimesHandler() {
     	personDepartureEvents = new ArrayList<>();
-        vehicleEntersTrafficEvents = new ArrayList<>();
+        vehicleEntersTrafficMap = new HashMap<>();
     }
 
 	@Override
@@ -48,29 +50,32 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 	@Override
 	public void handleEvent(VehicleEntersTrafficEvent event) {
 		if (!event.getPersonId().toString().contains("freight")) {
-			vehicleEntersTrafficEvents.add(new MinimalEvent("vehicleEntersTraffic",
+			vehicleEntersTrafficMap.computeIfAbsent(event.getPersonId().toString(), k -> new ArrayList<>()).add(new MinimalEvent("vehicleEntersTraffic",
 				event.getPersonId().toString(), event.getLinkId().toString(), event.getTime(), event.getVehicleId().toString()));
 		}
 	}
 	
-	private MinimalEvent findClosestVehicleEntersTrafficEvent(MinimalEvent personDepatureEvent) {
-        MinimalEvent closestEvent = null;
-        Double closestTimeDiff = Double.MAX_VALUE;
+	private MinimalEvent findClosestVehicleEntersTrafficEvent(MinimalEvent personDepartureEvent) {
+        List<MinimalEvent> eventsForPerson = vehicleEntersTrafficMap.get(personDepartureEvent.person);
+        if (eventsForPerson != null) {
+            MinimalEvent closestEvent = null;
+            Double closestTimeDiff = Double.MAX_VALUE;
 
-        for (MinimalEvent vehicleEntersTrafficEvent : vehicleEntersTrafficEvents) {
-            if (personDepatureEvent.person.equals(vehicleEntersTrafficEvent.person)
-                    && personDepatureEvent.link.equals(vehicleEntersTrafficEvent.link)
-                    && vehicleEntersTrafficEvent.time >= personDepatureEvent.time) {
-                Double timeDiff = Math.abs(personDepatureEvent.time - vehicleEntersTrafficEvent.time);
+            for (MinimalEvent vehicleEntersTrafficEvent : eventsForPerson) {
+                if (personDepartureEvent.link.equals(vehicleEntersTrafficEvent.link)) {
+                    Double timeDiff = Math.abs(personDepartureEvent.time - vehicleEntersTrafficEvent.time);
 
-                if (timeDiff <= closestTimeDiff) {
-                    closestTimeDiff = timeDiff;
-                    closestEvent = vehicleEntersTrafficEvent;
+                    if (timeDiff < closestTimeDiff) {
+                        closestTimeDiff = timeDiff;
+                        closestEvent = vehicleEntersTrafficEvent;
+                    }
                 }
             }
+
+            return closestEvent;
         }
 
-        return closestEvent;
+        return null;
     }
 	
 	public void writeToCSV(String filename) {

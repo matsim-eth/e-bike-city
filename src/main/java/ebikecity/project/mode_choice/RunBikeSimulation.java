@@ -236,7 +236,7 @@ public class RunBikeSimulation {
 			}
 		} ) ;
 		
-		controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
+//		controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
 
 		controler.run();
 	}

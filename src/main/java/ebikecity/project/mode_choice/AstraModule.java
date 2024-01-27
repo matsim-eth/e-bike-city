@@ -56,11 +56,19 @@ public class AstraModule extends AbstractEqasimExtension {
 
 		bind(AstraPtPredictor.class);
 		bind(AstraBikePredictor.class);
+<<<<<<< Updated upstream
 		// bind(AccessEgressBikePredictor.class);
 		bind(AstraWalkPredictor.class);
 		bind(AstraPersonPredictor.class);
 		bind(AstraTripPredictor.class);
 		// bind(AccessEgressCarPredictor.class);
+=======
+//		bind(AccessEgressBikePredictor.class);
+		bind(AstraWalkPredictor.class);
+		bind(AstraPersonPredictor.class);
+		bind(AstraTripPredictor.class);
+//		bind(AccessEgressCarPredictor.class);
+>>>>>>> Stashed changes
 
 		bindTripConstraintFactory(InfiniteHeadwayConstraint.NAME).to(InfiniteHeadwayConstraint.Factory.class);
 

@@ -1,6 +1,5 @@
 package ebikecity.project.mode_choice.estimators;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
@@ -15,7 +14,6 @@ import com.google.inject.Inject;
 import ebikecity.project.mode_choice.AstraModeParameters;
 import ebikecity.project.mode_choice.predictors.AccessEgressBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
-// import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
 import ebikecity.project.mode_choice.predictors.AstraTripPredictor;
 import ebikecity.project.mode_choice.variables.AstraBikeVariables;

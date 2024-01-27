@@ -1,6 +1,5 @@
 package ebikecity.project.mode_choice.estimators;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.CarUtilityEstimator;

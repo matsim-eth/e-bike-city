@@ -205,25 +205,6 @@ public class RunEBikeSimulation {
 					}
 				} );
 
-				// make the qsim such that bicycle son bicycle expressways are faster than their normal speed:
-				
-				// changed for MATSim 13
-				// this.installOverridingQSimModule( new AbstractQSimModule(){
-//				this.installQSimModule( new AbstractQSimModule(){
-//					@Inject EventsManager events;
-//					@Inject Scenario scenario;
-//					@Override protected void configureQSim(){
-//						// instantiate the configurable network factory:
-//						final ConfigurableQNetworkFactory factory = new ConfigurableQNetworkFactory(events, scenario);
-//
-//						// set the speed calculation as declared above in the preparation:
-//						factory.setLinkSpeedCalculator( ( qVehicle, link, time ) -> getMaxSpeedFromVehicleAndLink( link, time, qVehicle.getVehicle() ) );
-//
-//						// set (= overwrite) the QNetworkFactory with the factory defined here:
-//						bind( QNetworkFactory.class ).toInstance(factory );
-//						// (this is a bit dangerous since other pieces of code might overwrite the QNetworkFactory as well.  In the longer run, need to find a different solution.)
-//					}
-//				} );
 			}
 		} ) ;
 		

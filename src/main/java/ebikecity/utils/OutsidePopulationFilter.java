@@ -2,14 +2,11 @@ package ebikecity.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.io.PopulationReader;
@@ -18,8 +15,11 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class OutsidePopulationFilter {
 	
-	// rewrite all plans that are set to mode car to walk to start the simulation with empty roads
-	// change only inside agents, if mode choice for outside agents is supposed to be deactivated
+	// run this to create a population only of agents that have at least one outside activity
+	
+	// args
+	// [0] path to original population (xml or xml.gz)
+	// [1] path to only outside population (xml or xml.gz)
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -30,8 +30,7 @@ public class OutsidePopulationFilter {
 		PopulationReader popReader = new PopulationReader(scenario);
 		popReader.readFile(args[0]);
 		
-		// count plans that contain car
-		
+		// store inside persons to remove
 		List<Id<Person>> inIds = new ArrayList<Id<Person>>();
 		
 		

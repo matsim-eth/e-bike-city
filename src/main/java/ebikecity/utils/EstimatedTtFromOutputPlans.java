@@ -15,16 +15,21 @@ import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.TripStructureUtils.Trip;
 import org.matsim.core.scenario.ScenarioUtils;
 
+// run this to get the estimated trip travel times from that iteration
+// from the output plans as csv
 
-public class EstimatedTtFromOutputPlans {
-	
+// args
+// [0] path of plans file (xml or xml.gz)
+// [1] path of output file (csv)
+
+public class EstimatedTtFromOutputPlans {	
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
+		
+		// read in plans
 		Config config = ConfigUtils.createConfig();
-
 		Scenario scenario = ScenarioUtils.createMutableScenario(config);
-
 		PopulationReader popReader = new PopulationReader(scenario);
 		popReader.readFile(args[0]);
 		
@@ -35,7 +40,7 @@ public class EstimatedTtFromOutputPlans {
             writer.write("person,trip_number,trip_id,mode,travel_time");
             writer.newLine();
 			
-			// Write data to CSV
+			// Write data to CSV: for every person convert selected plan to list of trips and write information of interest
             for (Person person : scenario.getPopulation().getPersons().values()) {
             	List<Trip> trips = TripStructureUtils.getTrips(person.getSelectedPlan());
             	for (int i = 0; i < trips.size(); i++) {

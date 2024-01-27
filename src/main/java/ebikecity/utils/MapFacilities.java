@@ -41,9 +41,25 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+// run this when you have a new network converted from osm
+// and want to map the facilities find equivalent link in terms of 
+// road type, location and direction 
+
+// args
+// inputs
+// [0] reference network
+// [1] reference population
+// [2] reference facilities
+// [3] new network
+// outputs
+// [4] new population with updated links
+// [5] new facilities with updated links
 
 public class MapFacilities {
 	
+		// methods
+	
+		// calculate angle between two links
 		public static double calculateAbsAngle(Link link1, Link link2) throws NoSuchAuthorityCodeException, FactoryException {
 			
 			// CoordinateReferenceSystem crs = CRS.decode("EPSG:2056");
@@ -76,7 +92,7 @@ public class MapFacilities {
 
 	public static void main(String[] args) throws NoSuchAuthorityCodeException, FactoryException {
 		
-		// scenario for classic input
+		// scenario for reference input (network cut with eqasim)
 		Config config = ConfigUtils.createConfig();
 
 		Scenario scenario = ScenarioUtils.createMutableScenario(config);

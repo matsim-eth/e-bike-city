@@ -12,9 +12,17 @@ import org.matsim.api.core.v01.events.VehicleEntersTrafficEvent;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
 import org.matsim.api.core.v01.events.handler.VehicleEntersTrafficEventHandler;
 
+// belongs to VehEnterTimesFromEvents
+// for now, only works for simulation where only cars are simulated
+// and vehicle id = person id
+// (it is a bit tedious, another way would be to store only the personDepartureEvents
+// and for each vehicleEntersTrafficEvent get the last recorded personDepartureEvent)
+
 public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 											 PersonDepartureEventHandler {
 	
+	// helper class to store the event information we want to write to the csv file
+	// easier later, because same attributes for both events types (vehicleEntersTraffic and PersonDeparture)
 	class MinimalEvent {
 	    String type;
 	    String person;
@@ -31,6 +39,7 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 	    }
 	}
 	
+	// for storing events and matching them later when writing csv
 	private List<MinimalEvent> personDepartureEvents;
 	private Map<String, List<MinimalEvent>> vehicleEntersTrafficMap;
     
@@ -39,6 +48,7 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
         vehicleEntersTrafficMap = new HashMap<>();
     }
 
+    // store personDepartureEvents of agents starting a car trip
 	@Override
 	public void handleEvent(PersonDepartureEvent event) {
 		if (event.getLegMode().equals("car")) {
@@ -47,6 +57,7 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 		}
 	}
 
+	// store vehicleEntersTrafficEvent at beginning of all car trips
 	@Override
 	public void handleEvent(VehicleEntersTrafficEvent event) {
 		if (!event.getPersonId().toString().contains("freight")) {
@@ -55,6 +66,9 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 		}
 	}
 	
+	// for every personDepartureEvent find closest vehicleEntersTrafficEvent in the future
+	// e.g. if people start multiple trips from their home, they have multiple 
+	// personDeparture and vehicleEntersTraffic events on that link
 	private MinimalEvent findClosestVehicleEntersTrafficEvent(MinimalEvent personDepartureEvent) {
         List<MinimalEvent> eventsForPerson = vehicleEntersTrafficMap.get(personDepartureEvent.person);
         if (eventsForPerson != null) {
@@ -63,9 +77,9 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
 
             for (MinimalEvent vehicleEntersTrafficEvent : eventsForPerson) {
                 if (personDepartureEvent.link.equals(vehicleEntersTrafficEvent.link)) {
-                    Double timeDiff = Math.abs(personDepartureEvent.time - vehicleEntersTrafficEvent.time);
+                    Double timeDiff = personDepartureEvent.time - vehicleEntersTrafficEvent.time;
 
-                    if (timeDiff < closestTimeDiff) {
+                    if ((timeDiff >= 0.0)&& (timeDiff < closestTimeDiff)) {
                         closestTimeDiff = timeDiff;
                         closestEvent = vehicleEntersTrafficEvent;
                     }
@@ -78,6 +92,7 @@ public class DepEnterTimesHandler implements VehicleEntersTrafficEventHandler,
         return null;
     }
 	
+	// write to csv
 	public void writeToCSV(String filename) {
         try (FileWriter csvWriter = new FileWriter(filename)) {
             csvWriter.append("Person,Vehicle,Mode,Link,PersonDepartureTime,VehicleEntersTrafficTime,TimeDiff\n");

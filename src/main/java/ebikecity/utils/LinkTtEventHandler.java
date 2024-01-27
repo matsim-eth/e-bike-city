@@ -15,11 +15,14 @@ import org.matsim.api.core.v01.events.handler.LinkLeaveEventHandler;
 import org.matsim.api.core.v01.events.handler.VehicleEntersTrafficEventHandler;
 import org.matsim.api.core.v01.events.handler.VehicleLeavesTrafficEventHandler;
 
+// belongs to LinkTtFromEvents
+
 public class LinkTtEventHandler implements VehicleEntersTrafficEventHandler, LinkEnterEventHandler,
 										   LinkLeaveEventHandler, VehicleLeavesTrafficEventHandler {
 	
 	private VehicleLinkParser parser;
 	
+	// helper class to store link enter and leave time of vehicle on one link
 	class VehicleLinkInfo {
 	    private double enterTime;
 	    private double leaveTime;
@@ -38,7 +41,10 @@ public class LinkTtEventHandler implements VehicleEntersTrafficEventHandler, Lin
 	    }
 	}
 	
+	// helper class to store link leave and enter events for every vehicle
 	public class VehicleLinkParser {
+		
+		// container mapping vehicleId to map of linkIds that contains VehicleLinkInfo (enter and leave times)
 	    private Map<String, Map<String, VehicleLinkInfo>> vehicleLinkData;
 
 	    public VehicleLinkParser() {
@@ -46,10 +52,11 @@ public class LinkTtEventHandler implements VehicleEntersTrafficEventHandler, Lin
 	    }
 
 	    public void addEnterTime(String vehicleId, String linkId, double enterTime) {
+	    	// id first occurrence of vehicle create new entry to map
 	        vehicleLinkData.putIfAbsent(vehicleId, new HashMap<>());
+	        // for this link, create map with vehicle and enter and leave times
 	        Map<String, VehicleLinkInfo> linkMap = vehicleLinkData.get(vehicleId);
-
-	        // Only add enter time; leave time will be set later
+	        // Only add enter time, leave time will be set later
 	        linkMap.put(linkId, new VehicleLinkInfo(enterTime, -1));
 	    }
 
@@ -58,6 +65,8 @@ public class LinkTtEventHandler implements VehicleEntersTrafficEventHandler, Lin
 
 	        if (linkMap != null) {
 	            // Update leave time for the specified link
+	        	// caution, going over this now, I am not sure what happens when vehicle travels on link 
+	        	// multiple times during the simulation
 	            VehicleLinkInfo info = linkMap.get(linkId);
 	            if (info != null) {
 	                info = new VehicleLinkInfo(info.getEnterTime(), leaveTime);
@@ -82,6 +91,11 @@ public class LinkTtEventHandler implements VehicleEntersTrafficEventHandler, Lin
 		this.parser = new VehicleLinkParser();
 			
 	}
+	
+	// connect eventHandler and parser functions
+	// treat VehicleEntersTrafficEvent same as LinkEnterEvent
+	// and VehicleLeavesTrafficEvent as LinkLeaveEvent
+	// to not write the same for both delegated to parser
 	
 	@Override
 	public void handleEvent(VehicleEntersTrafficEvent event) {
@@ -143,7 +157,7 @@ public class LinkTtEventHandler implements VehicleEntersTrafficEventHandler, Lin
 		
 	}
 
-	
+	// write information to csv
 	public void writeTravelTimes(String filename) {
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))){
 			

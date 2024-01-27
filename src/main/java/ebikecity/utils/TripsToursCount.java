@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.matsim.api.core.v01.Scenario;
@@ -24,10 +23,15 @@ import org.matsim.contribs.discrete_mode_choice.replanning.TripListConverter;
 
 import ebikecity.project.config.AstraConfigurator;
 
+// run this to create a csv from the plans that gets all tours (start or end at home or outside)
+// and all trip ids of tour and the sum of the euclidean distance of the trips of the tour
+
+// args
+// [0] config that contains population and network and output directory
+
+
 public class TripsToursCount {
-	
-	// rewrite all plans that are set to mode car to walk to start the simulation with empty roads
-	// change only inside agents, if mode choice for outside agents is supposed to be deactivated
+
 
 	public static void main(String[] args) throws IOException, InterruptedException, ConfigurationException {
 		CommandLine cmd = new CommandLine.Builder(args) //

@@ -20,33 +20,37 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class HomeToursCarToPt {
 	
-	// rewrite all plans that are set to mode car to walk to start the simulation with empty roads
-	// change only inside agents, if mode choice for outside agents is supposed to be deactivated
+	// run this to rewrite all plans that are set to mode car to pt 
+	// to start the simulation with emptier roads
+	// changes only home-home tours that are unconstrained by mode choice
+	
+	// args
+	// [0] path to input plans (xml or xml.gz)
+	// [1] path to output plans (xml or xml.gz)
+	// [2] share of tours to be converted 0.0 ... 1.0
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
+		// read plans 
 		Config config = ConfigUtils.createConfig();
-
 		Scenario scenario = ScenarioUtils.createMutableScenario(config);
-
 		PopulationReader popReader = new PopulationReader(scenario);
 		popReader.readFile(args[0]);
 		
-		// count tours that contain car
+		// counter of tours that contain car
 		int tours_count = 0;
-		
 		
 		double change_factor = Double.parseDouble(args[2]);
 		
-		
+		// containers to store agents that have mutable tours and mutable tours
 		List<Id<Person>> poolIds = new ArrayList<Id<Person>>();
-		
 		HashMap<Id<Person>, List<List<Integer>>> mutableTours = new HashMap<Id<Person>, List<List<Integer>>>();
 		
 		// count all the tours with mode car from home to home without outside in between
 		
 		for (Person person : scenario.getPopulation().getPersons().values()) {
 			// find all home - home tours with car
+			// container to store inddex of plan elements that are start and end home activities of a tour
 			List<Integer> homeCarStart = new ArrayList<Integer>();
 			List<Integer> homeCarEnd = new ArrayList<Integer>();
 			for (int i = 0; i < person.getSelectedPlan().getPlanElements().size(); i++) {
@@ -75,7 +79,7 @@ public class HomeToursCarToPt {
 									homeCarEnd.add(i);
 								}	
 							}
-							// if there is a next leg, also start of new tour
+							// if there is a next car leg, also start of new tour
 							if (i+1 < person.getSelectedPlan().getPlanElements().size()) {
 								PlanElement nextPe = person.getSelectedPlan().getPlanElements().get(i+1);
 								if (nextPe instanceof Leg) {
@@ -104,10 +108,6 @@ public class HomeToursCarToPt {
 				
 			}
 			
-			// System.out.println(person.getId());
-			// System.out.println(homeCarStart);
-			// System.out.println(homeCarEnd);
-			// System.out.println("---");
 			
 			// check that in between home and home there is no outside
 			if ((homeCarStart.size() > 0)) {
@@ -131,11 +131,8 @@ public class HomeToursCarToPt {
 				}
 			}
 			
-			// System.out.println(homeCarStart);
-			// System.out.println(homeCarEnd);
-			// System.out.println("------");
 			
-			
+			// if we found suitable home-home tours, store person and tours and add tours to count
 			if ((homeCarStart.size() > 0)) {
 				poolIds.add(person.getId());
 				List<List<Integer>> startEndLists = new ArrayList<List<Integer>>();
@@ -152,8 +149,10 @@ public class HomeToursCarToPt {
 		// count mutated tours
 		int mutation_count = 0;
 		
+		// if only part of tours to be converted, calculate stop criterium
 		int stop = (int) (change_factor * tours_count);
 		
+		// change mode of every leg on a home-home car tour to pt
 		for (Id<Person> id : poolIds) {
 			Person person = scenario.getPopulation().getPersons().get(id);	
 			for (int j = 0; j < mutableTours.get(id).get(0).size(); j++) {
@@ -173,20 +172,19 @@ public class HomeToursCarToPt {
 				}
 		}
 		
-		System.out.println("All tours ----------------");
-		System.out.println(tours_count);
-		// Thread.sleep(1500);
-		System.out.println("Stop ----------------");
-		System.out.println(stop);
-		// Thread.sleep(1500);
-		System.out.println("Changed tours ----------------");
-		System.out.println(mutation_count);
-		// Thread.sleep(1500);
-		System.out.println("Control ----------------");
-		double control = (float) mutation_count / (float) tours_count;
-		System.out.println(control);
-		// Thread.sleep(1500);
+		// optional: print to console for checking
+//		System.out.println("All tours ----------------");
+//		System.out.println(tours_count);
+//		System.out.println("Stop ----------------");
+//		System.out.println(stop);
+//		System.out.println("Changed tours ----------------");
+//		System.out.println(mutation_count);
+//		System.out.println("Control ----------------");
+//		double control = (float) mutation_count / (float) tours_count;
+//		System.out.println(control);
 		
+		
+		// write plans file with converted plans 
 		new PopulationWriter(scenario.getPopulation()).write(args[1]);
 		
 	}

@@ -9,6 +9,10 @@ import java.util.List;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 
+// belongs to CountsFromEvents
+// stores bike counts on specific links for each hour of the simulation in a matrix while parsing events file
+// (City of Zurich recommends to aggregate their counts as well by hour)
+
 public class CountEventHandler implements LinkEnterEventHandler {
 	
 	private List<String> linksOfInterest = new ArrayList<String>();
@@ -20,6 +24,7 @@ public class CountEventHandler implements LinkEnterEventHandler {
 		
 	}
 	
+	// count linkEnterEvents of vehicles xxxxx_bike and assign to hourly bin
 	@Override
 	public void handleEvent(LinkEnterEvent event) {
 		if (this.linksOfInterest.contains(event.getLinkId().toString())) {
@@ -31,6 +36,8 @@ public class CountEventHandler implements LinkEnterEventHandler {
 		
 	}
 	
+	
+	// write csv with links as headers and hours as index
 	public void writeCounts(String filename) {
 		try {
 			FileWriter writer = new FileWriter(filename);

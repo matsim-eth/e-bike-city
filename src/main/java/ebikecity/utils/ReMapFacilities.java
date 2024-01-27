@@ -26,6 +26,13 @@ import org.matsim.facilities.MatsimFacilitiesReader;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 
+// run this if you want to use a population in a new network where facilties have the same ids and
+// links are in the same locations but have different ids
+
+// args
+// [0] plans (facilities with old ids)
+// [1] facilities (with new oíds)
+// [2] output plans (facilities with new ids)
 
 public class ReMapFacilities {
 	

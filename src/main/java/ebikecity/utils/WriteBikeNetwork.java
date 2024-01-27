@@ -13,11 +13,19 @@ import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
+// run this to filter a network for bikeable links
+// helps to check connectedness of network
+
+// args
+// [0] path to network file
+// [1] path to output bike network file
+
 public class WriteBikeNetwork {
+
 	
 	public static void main(String[] args) {
 		
-		// load network, population and facilities
+				// load network, population and facilities
 				Config config = ConfigUtils.createConfig();
 
 				Scenario scenario = ScenarioUtils.createMutableScenario(config);

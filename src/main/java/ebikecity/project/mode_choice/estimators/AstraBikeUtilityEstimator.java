@@ -70,18 +70,18 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 		utility += estimateAgeUtility(personVariables);
 		utility += estimateWorkUtility(tripVariables);
 		
-		// List that stores information to be mapped onto trip
-		List<String> store = new ArrayList<String>();
-		store.add(person.getId().toString());
-		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
-		store.add(Double.toString(trip.getDepartureTime()));
-		store.add(trip.getOriginActivity().getFacilityId().toString());
-		store.add("bike");
-		store.add(Double.toString(variables.travelTime_min * 60));
-		store.add(Double.toString(utility));
-				
-		UtilityContainer container = UtilityContainer.getInstance();
-		container.getUtilites().add(store);
+//		// List that stores information to be mapped onto trip
+//		List<String> store = new ArrayList<String>();
+//		store.add(person.getId().toString());
+//		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
+//		store.add(Double.toString(trip.getDepartureTime()));
+//		store.add(trip.getOriginActivity().getFacilityId().toString());
+//		store.add("bike");
+//		store.add(Double.toString(variables.travelTime_min * 60));
+//		store.add(Double.toString(utility));
+//				
+//		UtilityContainer container = UtilityContainer.getInstance();
+//		container.getUtilites().add(store);
 
 		return utility;
 	}

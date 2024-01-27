@@ -81,7 +81,7 @@ public class AstraWalkUtilityEstimator extends WalkUtilityEstimator {
 		store.add(Double.toString(variables.travelTime_min * 60));
 		store.add(Double.toString(utility));
 				
-		// How can I make all the estimators add their store into the same container??
+		// Make all the estimators store into the same container
 		UtilityContainer container = UtilityContainer.getInstance();
 		container.getUtilites().add(store);
 

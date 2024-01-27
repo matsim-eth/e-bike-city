@@ -68,6 +68,13 @@
 			<artifactId>pt2matsim</artifactId>
 			<version>22.3</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>locationchoice</artifactId>
+			<version>13.0</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>

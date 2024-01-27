@@ -24,18 +24,18 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 	static public final String NAME = "AstraBikeEstimator";
 
 	private final AstraModeParameters parameters;
-//	private final AccessEgressBikePredictor predictor;
-	private final AstraBikePredictor predictor;
+	private final AccessEgressBikePredictor predictor;
+//	private final AstraBikePredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-//	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
-	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
+	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
+//	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		
-		super(parameters, personPredictor.delegate, predictor.delegate);
-//		super(parameters, personPredictor.delegate, predictor);
+//		super(parameters, personPredictor.delegate, predictor.delegate);
+		super(parameters, personPredictor.delegate, predictor);
 
 		this.parameters = parameters;
 		this.predictor = predictor;

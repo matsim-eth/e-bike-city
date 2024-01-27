@@ -3,7 +3,6 @@ package ebikecity.project.mode_choice;
 import java.io.IOException;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,30 +11,19 @@ import org.eqasim.core.simulation.analysis.EqasimAnalysisModule;
 import org.eqasim.core.simulation.mode_choice.EqasimModeChoiceModule;
 import org.eqasim.switzerland.SwitzerlandConfigurator;
 import org.eqasim.switzerland.mode_choice.SwissModeChoiceModule;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.mobsim.qsim.qnetsimengine.ConfigurableQNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.filter.NetworkFilterManager;
-import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
@@ -135,12 +123,6 @@ public class RunBikeSimulation {
 		// set config such that the mode vehicles come from vehicles data:
 		
 		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
-		
-		
-//		System.out.println("@me");
-//		for (VehicleType vehType : scenario.getVehicles().getVehicleTypes().values()) {
-//			System.out.println(vehType.getId().toString());
-//			}
 				
 			
 		// create all vehicleTypes requested by planscalcroute networkModes
@@ -151,7 +133,6 @@ public class RunBikeSimulation {
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create("car_passenger", VehicleType.class))
 				.setMaximumVelocity(120.0/3.6));
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create(TransportMode.truck, VehicleType.class))
-		// look this up later to be consistent
 				.setMaximumVelocity(80.0/3.6).setPcuEquivalents(2.5));
 		// cannot set networkMode to bike, why???
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create(BIKE, VehicleType.class))
@@ -204,6 +185,7 @@ public class RunBikeSimulation {
 
 						// the link travel time is computed from that speed:
 						// return link.getLength()/actualSpeed ;
+						// use vod instead of length
 						String vod = link.getAttributes().getAttribute("osm:way:cost_cycling_>").toString();
 						double vodd = 1000000000;
 						if (!vod.equals("inf")) {
@@ -214,25 +196,6 @@ public class RunBikeSimulation {
 					}
 				} );
 
-				// make the qsim such that bicycle son bicycle expressways are faster than their normal speed:
-				
-				// changed for MATSim 13
-				// this.installOverridingQSimModule( new AbstractQSimModule(){
-//				this.installQSimModule( new AbstractQSimModule(){
-//					@Inject EventsManager events;
-//					@Inject Scenario scenario;
-//					@Override protected void configureQSim(){
-//						// instantiate the configurable network factory:
-//						final ConfigurableQNetworkFactory factory = new ConfigurableQNetworkFactory(events, scenario);
-//
-//						// set the speed calculation as declared above in the preparation:
-//						factory.setLinkSpeedCalculator( ( qVehicle, link, time ) -> getMaxSpeedFromVehicleAndLink( link, time, qVehicle.getVehicle() ) );
-//
-//						// set (= overwrite) the QNetworkFactory with the factory defined here:
-//						bind( QNetworkFactory.class ).toInstance(factory );
-//						// (this is a bit dangerous since other pieces of code might overwrite the QNetworkFactory as well.  In the longer run, need to find a different solution.)
-//					}
-//				} );
 			}
 		} ) ;
 		

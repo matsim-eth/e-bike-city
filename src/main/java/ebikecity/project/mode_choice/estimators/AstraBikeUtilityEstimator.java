@@ -26,18 +26,18 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 	static public final String NAME = "AstraBikeEstimator";
 
 	private final AstraModeParameters parameters;
-//	private final AccessEgressBikePredictor predictor;
-	private final AstraBikePredictor predictor;
+	private final AccessEgressBikePredictor predictor;
+//	private final AstraBikePredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-//	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
-	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
+	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
+//	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		
-		super(parameters, personPredictor.delegate, predictor.delegate);
-//		super(parameters, personPredictor.delegate, predictor);
+//		super(parameters, personPredictor.delegate, predictor.delegate);
+		super(parameters, personPredictor.delegate, predictor);
 
 		this.parameters = parameters;
 		this.predictor = predictor;
@@ -73,17 +73,17 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 		utility += estimateWorkUtility(tripVariables);
 		
 		// List that stores information to be mapped onto trip
-		List<String> store = new ArrayList<String>();
-		store.add(person.getId().toString());
-		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
-		store.add(Double.toString(trip.getDepartureTime()));
-		store.add(trip.getOriginActivity().getFacilityId().toString());
-		store.add("bike");
-		store.add(Double.toString(variables.travelTime_min * 60));
-		store.add(Double.toString(utility));
-				
-		UtilityContainer container = UtilityContainer.getInstance();
-		container.getUtilites().add(store);
+//		List<String> store = new ArrayList<String>();
+//		store.add(person.getId().toString());
+//		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
+//		store.add(Double.toString(trip.getDepartureTime()));
+//		store.add(trip.getOriginActivity().getFacilityId().toString());
+//		store.add("bike");
+//		store.add(Double.toString(variables.travelTime_min * 60));
+//		store.add(Double.toString(utility));
+//				
+//		UtilityContainer container = UtilityContainer.getInstance();
+//		container.getUtilites().add(store);
 
 		return utility;
 	}

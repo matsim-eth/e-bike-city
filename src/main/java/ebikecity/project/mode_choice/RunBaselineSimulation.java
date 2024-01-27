@@ -71,7 +71,7 @@ public class RunBaselineSimulation {
 
 		controller.addOverridingModule(new SmoothingTravelTimeModule());
 		
-		controller.addControlerListener(new UtilityControlerListener(controller.getConfig().controler().getOutputDirectory()));
+//		controller.addControlerListener(new UtilityControlerListener(controller.getConfig().controler().getOutputDirectory()));
 
 		controller.run();
 	}

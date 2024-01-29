@@ -1,6 +1,7 @@
 package ebikecity.project.travel_time;
 
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.config.groups.ControlerConfigGroup;
 import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 
@@ -20,7 +21,7 @@ public class SmoothingTravelTimeModule extends AbstractModule {
 	@Provides
 	@Singleton
 	public SmoothingTravelTime provideSmoothingTravelTime(Network network, TravelTimeCalculatorConfigGroup config,
-			AstraConfigGroup astraConfig) {
+			AstraConfigGroup astraConfig, ControlerConfigGroup conConfig) {
 		double startTime = 0.0;
 		double endTime = config.getMaxTime();
 		double interval = config.getTraveltimeBinSize();
@@ -29,8 +30,10 @@ public class SmoothingTravelTimeModule extends AbstractModule {
 
 		double smoothingIncreasingAlpha = astraConfig.getTravelTimeEstimationAlpha(); // 9;
 		double smoothingDecreasingAlpha = astraConfig.getTravelTimeEstimationAlpha();
+		
+		String outputDirectory = conConfig.getOutputDirectory();
 
 		return new SmoothingTravelTime(startTime, endTime, interval, smoothingIncreasingAlpha, smoothingDecreasingAlpha,
-				fixFreespeedTravelTime, network);
+				fixFreespeedTravelTime, network, outputDirectory);
 	}
 }

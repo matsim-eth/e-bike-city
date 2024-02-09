@@ -1,5 +1,6 @@
 package ebikecity.project.mode_choice.estimators;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
@@ -69,6 +70,20 @@ public class AstraWalkUtilityEstimator extends WalkUtilityEstimator {
 		utility += estimateAgeUtility(personVariables);
 		utility += estimateWorkUtility(tripVariables);
 		utility += estimatePenalty(variables);
+		
+		// List that stores information to be mapped onto trip
+		List<String> store = new ArrayList<String>();
+		store.add(person.getId().toString());
+		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
+		store.add(Double.toString(trip.getDepartureTime()));
+		store.add(trip.getOriginActivity().getFacilityId().toString());
+		store.add("walk");
+		store.add(Double.toString(variables.travelTime_min * 60));
+		store.add(Double.toString(utility));
+				
+		// Make all the estimators store into the same container
+		UtilityContainer container = UtilityContainer.getInstance();
+		container.getUtilites().add(store);
 
 		return utility;
 	}

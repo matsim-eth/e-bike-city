@@ -42,7 +42,7 @@ import ebikecity.project.travel_time.SmoothingTravelTimeModule;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
 import org.matsim.core.config.groups.QSimConfigGroup;
 
-public class RunBikeSimulation {
+public class RunEBikeSimulation {
 	
 	
 	private static final String BIKE=TransportMode.bike;
@@ -58,24 +58,6 @@ public class RunBikeSimulation {
 		cmd.applyConfiguration(config);
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
-		
-		// add allowed mode bike for car links that are not highway or trunk
-		
-		for (Link link : scenario.getNetwork().getLinks().values()) {
-			if (link.getAllowedModes().contains("car")) {
-			
-			// if (net.getLinks().values().contains(link)) {
-				
-				if (!link.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk") &&
-						!link.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
-					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
-					allowedModes.add(BIKE);
-					link.setAllowedModes(allowedModes);
-				}
-				
-			}
-			
-		}
 		
 		for (Person person : scenario.getPopulation().getPersons().values()) {
 
@@ -122,8 +104,7 @@ public class RunBikeSimulation {
 		
 		// set config such that the mode vehicles come from vehicles data:
 		
-		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
-				
+		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );	
 			
 		// create all vehicleTypes requested by planscalcroute networkModes
 
@@ -134,9 +115,11 @@ public class RunBikeSimulation {
 				.setMaximumVelocity(120.0/3.6));
 		scenario.getVehicles().addVehicleType(vf.createVehicleType(Id.create(TransportMode.truck, VehicleType.class))
 				.setMaximumVelocity(80.0/3.6).setPcuEquivalents(2.5));
-		// cannot set networkMode to bike, why???
+		// cannot set networkMode to bike, but works anyway (bikes and ebikes use paths, car not)
 		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create(BIKE, VehicleType.class))
-				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25));
+				.setMaximumVelocity(15.0/3.6).setPcuEquivalents(0.25)); 
+		scenario.getVehicles().addVehicleType( vf.createVehicleType(Id.create("ebike", VehicleType.class))
+				.setMaximumVelocity(25.0/3.6).setPcuEquivalents(0.25));		
 
 		// EqasimLinkSpeedCalculator deactivated!
 
@@ -194,11 +177,38 @@ public class RunBikeSimulation {
 						return vodd/actualSpeed;
 					}
 				} );
+				
+				this.addTravelTimeBinding( "ebike" ).toInstance( new TravelTime(){
+					@Inject @Named("ebike") TravelTimeCalculator eBikeCalculator ;
+					// (not very obvious why this is the correct syntax.  kai, jan'23)
+
+					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
+
+						// we get the max speed from vehicle and link, as defined in the preparation above:
+						final double maxSpeedFromVehicleAndLink = getMaxSpeedFromVehicleAndLink( link, time, vehicle );
+
+						// we also get the speed from observation:
+						double speedFromObservation = eBikeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
+
+						// we compute the min of the two:
+						double actualSpeed = Math.min( speedFromObservation, maxSpeedFromVehicleAndLink );
+
+						// the link travel time is computed from that speed:
+						// return link.getLength()/actualSpeed ;
+						String vod = link.getAttributes().getAttribute("osm:way:cost_cycling_>").toString();
+						double vodd = 1000000000;
+						if (!vod.equals("inf")) {
+							vodd = Double.parseDouble(vod);
+						}
+						
+						return vodd/actualSpeed;
+					}
+				} );
 
 			}
 		} ) ;
 		
-//		controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
+		// controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
 
 		controler.run();
 	}

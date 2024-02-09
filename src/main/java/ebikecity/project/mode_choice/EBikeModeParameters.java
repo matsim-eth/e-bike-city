@@ -1,42 +1,22 @@
 package ebikecity.project.mode_choice;
 
-import org.eqasim.switzerland.mode_choice.parameters.SwissModeParameters;
 
-public class AstraModeParameters extends SwissModeParameters {
-	static public class AstraBaseModeParameters {
+public class EBikeModeParameters extends AstraModeParameters{
+	static public class EBikeBaseModeParameters {
 		public double betaAgeOver60 = 0.0;
+		public double alpha_u = 0.0;
+		public double betaTravelTime_u_min = 0.0;
+		
+
 		public double betaWork = 0.0;
 		public double betaCity = 0.0;
-
 		public double travelTimeThreshold_min = 0.0;
 	}
-
-	public AstraBaseModeParameters astraWalk = new AstraBaseModeParameters();
-	public AstraBaseModeParameters astraBike = new AstraBaseModeParameters();
-	public AstraBaseModeParameters astraCar = new AstraBaseModeParameters();
-	public AstraBaseModeParameters astraAv = new AstraBaseModeParameters();
-
-	public class AstraPtParameters {
-		public double betaRailTravelTime_u_min = 0.0;
-		public double betaBusTravelTime_u_min = 0.0;
-		public double betaFeederTravelTime_u_min = 0.0;
-
-		public double betaHeadway_u_min = 0.0;
-		public double betaOvgkB_u = 0.0;
-		public double betaOvgkC_u = 0.0;
-		public double betaOvgkD_u = 0.0;
-		public double betaOvgkNone_u = 0.0;
-	}
-
-	public AstraPtParameters astraPt = new AstraPtParameters();
-
-	public double lambdaTravelTimeEuclideanDistance = 0.0;
-	public double lambdaCostHouseholdIncome = 0.0;
-	public double referenceHouseholdIncome_MU = 0.0;
 	
-
-	static public AstraModeParameters buildFrom6Feb2020() {
-		AstraModeParameters parameters = new AstraModeParameters();
+	public EBikeBaseModeParameters ebike = new EBikeBaseModeParameters();
+	
+	static public EBikeModeParameters modeParamInclEBike() {
+		EBikeModeParameters parameters = new EBikeModeParameters();
 
 		// General
 		parameters.betaCost_u_MU = -0.0888;
@@ -68,6 +48,12 @@ public class AstraModeParameters extends SwissModeParameters {
 		parameters.bike.betaTravelTime_u_min = -0.1258;
 
 		parameters.astraBike.betaAgeOver60 = -2.6588;
+		
+		// E-Bike
+		parameters.ebike.alpha_u = 0.1522;
+		parameters.ebike.betaTravelTime_u_min = -0.1258;
+
+		parameters.ebike.betaAgeOver60 = -2.6588;
 
 		// Car
 		parameters.car.alpha_u = -0.8; // Original from fb model: 0.2235;
@@ -84,4 +70,5 @@ public class AstraModeParameters extends SwissModeParameters {
 
 		return parameters;
 	}
+
 }

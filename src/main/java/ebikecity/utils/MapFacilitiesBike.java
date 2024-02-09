@@ -34,6 +34,19 @@ import org.matsim.facilities.MatsimFacilitiesReader;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 
+// run this when you have a network cut with eqasim
+// and you want to make sure that all facilities are on a link that are
+// accessible for bikes and cars
+// exception: outside facilities, split them into car and bike outside facility
+
+//args
+//inputs
+//[0] reference network
+//[1] reference population
+//[2] reference facilities
+//outputs
+//[3] new population with updated links
+//[4] new facilities with updated links
 
 public class MapFacilitiesBike {
 	

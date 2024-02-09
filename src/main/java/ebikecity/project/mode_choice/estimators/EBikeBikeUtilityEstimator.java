@@ -1,5 +1,6 @@
 package ebikecity.project.mode_choice.estimators;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eqasim.core.simulation.mode_choice.utilities.estimators.EstimatorUtils;
@@ -11,7 +12,7 @@ import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
 
 import com.google.inject.Inject;
 
-import ebikecity.project.mode_choice.AstraModeParameters;
+import ebikecity.project.mode_choice.EBikeModeParameters;
 import ebikecity.project.mode_choice.predictors.AccessEgressBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraBikePredictor;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
@@ -20,21 +21,21 @@ import ebikecity.project.mode_choice.variables.AstraBikeVariables;
 import ebikecity.project.mode_choice.variables.AstraPersonVariables;
 import ebikecity.project.mode_choice.variables.AstraTripVariables;
 
-public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
-	static public final String NAME = "AstraBikeEstimator";
+public class EBikeBikeUtilityEstimator extends SwissBikeUtilityEstimator {
+	static public final String NAME = "EBikeBikeEstimator";
 
-	private final AstraModeParameters parameters;
+	private final EBikeModeParameters parameters;
 	private final AccessEgressBikePredictor predictor;
-//	private final AstraBikePredictor predictor;
+	// private final AstraBikePredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AccessEgressBikePredictor predictor,
-//	public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
+	public EBikeBikeUtilityEstimator(EBikeModeParameters parameters, AccessEgressBikePredictor predictor,
+	// public AstraBikeUtilityEstimator(AstraModeParameters parameters, AstraBikePredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		
-//		super(parameters, personPredictor.delegate, predictor.delegate);
+		// super(parameters, personPredictor.delegate, predictor.delegate);
 		super(parameters, personPredictor.delegate, predictor);
 
 		this.parameters = parameters;
@@ -70,18 +71,18 @@ public class AstraBikeUtilityEstimator extends SwissBikeUtilityEstimator {
 		utility += estimateAgeUtility(personVariables);
 		utility += estimateWorkUtility(tripVariables);
 		
-//		// List that stores information to be mapped onto trip
-//		List<String> store = new ArrayList<String>();
-//		store.add(person.getId().toString());
-//		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
-//		store.add(Double.toString(trip.getDepartureTime()));
-//		store.add(trip.getOriginActivity().getFacilityId().toString());
-//		store.add("bike");
-//		store.add(Double.toString(variables.travelTime_min * 60));
-//		store.add(Double.toString(utility));
-//				
-//		UtilityContainer container = UtilityContainer.getInstance();
-//		container.getUtilites().add(store);
+		// List that stores information to be mapped onto trip
+		List<String> store = new ArrayList<String>();
+		store.add(person.getId().toString());
+		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
+		store.add(Double.toString(trip.getDepartureTime()));
+		store.add(trip.getOriginActivity().getFacilityId().toString());
+		store.add("bike");
+		store.add(Double.toString(variables.travelTime_min * 60));
+		store.add(Double.toString(utility));
+				
+		UtilityContainer container = UtilityContainer.getInstance();
+		container.getUtilites().add(store);
 
 		return utility;
 	}

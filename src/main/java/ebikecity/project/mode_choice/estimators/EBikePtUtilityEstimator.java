@@ -12,6 +12,7 @@ import org.matsim.contribs.discrete_mode_choice.model.DiscreteModeChoiceTrip;
 import com.google.inject.Inject;
 
 import ebikecity.project.mode_choice.AstraModeParameters;
+import ebikecity.project.mode_choice.EBikeModeParameters;
 import ebikecity.project.mode_choice.predictors.AstraPersonPredictor;
 import ebikecity.project.mode_choice.predictors.AstraPtPredictor;
 import ebikecity.project.mode_choice.predictors.AstraTripPredictor;
@@ -19,16 +20,16 @@ import ebikecity.project.mode_choice.variables.AstraPersonVariables;
 import ebikecity.project.mode_choice.variables.AstraPtVariables;
 import ebikecity.project.mode_choice.variables.AstraTripVariables;
 
-public class AstraPtUtilityEstimator extends PtUtilityEstimator {
+public class EBikePtUtilityEstimator extends PtUtilityEstimator {
 	static public final String NAME = "AstraPtEstimator";
 
-	private final AstraModeParameters parameters;
+	private final EBikeModeParameters parameters;
 	private final AstraPtPredictor predictor;
 	private final AstraPersonPredictor personPredictor;
 	private final AstraTripPredictor tripPredictor;
 
 	@Inject
-	public AstraPtUtilityEstimator(AstraModeParameters parameters, AstraPtPredictor predictor,
+	public EBikePtUtilityEstimator(EBikeModeParameters parameters, AstraPtPredictor predictor,
 			AstraPersonPredictor personPredictor, AstraTripPredictor tripPredictor) {
 		super(parameters, predictor.delegate);
 
@@ -120,20 +121,20 @@ public class AstraPtUtilityEstimator extends PtUtilityEstimator {
 		utility += estimateOvgkUtility(variables);
 		
 		// List that stores information to be mapped onto trip
-//		List<String> store = new ArrayList<String>();
-//		store.add(person.getId().toString());
-//		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
-//		store.add(Double.toString(trip.getDepartureTime()));
-//		store.add(trip.getOriginActivity().getFacilityId().toString());
-//		store.add("pt");
-//		store.add(Double.toString((variables.accessEgressTime_min
-//									+ variables.inVehicleTime_min
-//									+ variables.waitingTime_min) * 60));
-//		store.add(Double.toString(utility));
-//				
-//		// Make all the estimators store into the same container
-//		UtilityContainer container = UtilityContainer.getInstance();
-//		container.getUtilites().add(store);
+		List<String> store = new ArrayList<String>();
+		store.add(person.getId().toString());
+		store.add(person.getId().toString() + "_" + Integer.toString(trip.getIndex()+1));
+		store.add(Double.toString(trip.getDepartureTime()));
+		store.add(trip.getOriginActivity().getFacilityId().toString());
+		store.add("pt");
+		store.add(Double.toString((variables.accessEgressTime_min
+									+ variables.inVehicleTime_min
+									+ variables.waitingTime_min) * 60));
+		store.add(Double.toString(utility));
+				
+		// How can I make all the estimators add their store into the same container??
+		UtilityContainer container = UtilityContainer.getInstance();
+		container.getUtilites().add(store);
 
 		return utility;
 	}

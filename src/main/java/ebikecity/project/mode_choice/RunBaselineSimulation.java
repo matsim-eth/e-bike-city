@@ -18,6 +18,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import ebikecity.project.config.AstraConfigurator;
+import ebikecity.project.mode_choice.estimators.UtilityControlerListener;
 import ebikecity.project.travel_time.SmoothingTravelTimeModule;
 
 public class RunBaselineSimulation {
@@ -69,6 +70,8 @@ public class RunBaselineSimulation {
 		AstraConfigurator.configureController(controller, cmd);
 
 		controller.addOverridingModule(new SmoothingTravelTimeModule());
+		
+		// controller.addControlerListener(new UtilityControlerListener(controller.getConfig().controler().getOutputDirectory()));
 
 		controller.run();
 	}

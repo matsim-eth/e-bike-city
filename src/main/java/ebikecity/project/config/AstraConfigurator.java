@@ -11,7 +11,9 @@ import org.eqasim.core.simulation.calibration.CalibrationConfigGroup;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contribs.discrete_mode_choice.modules.DiscreteModeChoiceModule;
 import org.matsim.contribs.discrete_mode_choice.modules.config.DiscreteModeChoiceConfigGroup;
 import org.matsim.core.config.CommandLine;
@@ -24,11 +26,17 @@ import org.matsim.households.Household;
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import ebikecity.project.mode_choice.AstraModeAvailability;
+import ebikecity.project.mode_choice.EBikeModeAvailability;
 import ebikecity.project.mode_choice.InfiniteHeadwayConstraint;
 import ebikecity.project.mode_choice.estimators.AstraBikeUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraCarUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraPtUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraWalkUtilityEstimator;
+import ebikecity.project.mode_choice.estimators.EBikeBikeUtilityEstimator;
+import ebikecity.project.mode_choice.estimators.EBikeCarUtilityEstimator;
+import ebikecity.project.mode_choice.estimators.EBikeEBikeUtilityEstimator;
+import ebikecity.project.mode_choice.estimators.EBikePtUtilityEstimator;
+import ebikecity.project.mode_choice.estimators.EBikeWalkUtilityEstimator;
 
 public class AstraConfigurator extends EqasimConfigurator {
 	private AstraConfigurator() {
@@ -50,23 +58,30 @@ public class AstraConfigurator extends EqasimConfigurator {
 		config.qsim().setNumberOfThreads(Math.min(12, Runtime.getRuntime().availableProcessors()));
 		config.global().setNumberOfThreads(Runtime.getRuntime().availableProcessors());
 
-		for (StrategySettings strategy : config.strategy().getStrategySettings()) {
-			if (strategy.getStrategyName().equals(DiscreteModeChoiceModule.STRATEGY_NAME) ||
-					strategy.getStrategyName().equals("ReRoute")) {
-				strategy.setWeight(0.05);
-			} else {
-				strategy.setWeight(0.95);
-			}
-		}
+//		for (StrategySettings strategy : config.strategy().getStrategySettings()) {
+//			if (strategy.getStrategyName().equals(DiscreteModeChoiceModule.STRATEGY_NAME) ||
+//					strategy.getStrategyName().equals("ReRoute")) {
+//				// strategy.setWeight(1.0);
+//				strategy.setWeight(0.05);
+//			} else {
+//				strategy.setWeight(0.95);
+//			}
+//		}
 
 		// General eqasim
 		eqasimConfig.setTripAnalysisInterval(config.controler().getWriteEventsInterval());
 
 		// Estimators
-		eqasimConfig.setEstimator(TransportMode.car, AstraCarUtilityEstimator.NAME);
-		eqasimConfig.setEstimator(TransportMode.pt, AstraPtUtilityEstimator.NAME);
-		eqasimConfig.setEstimator(TransportMode.bike, AstraBikeUtilityEstimator.NAME);
-		eqasimConfig.setEstimator(TransportMode.walk, AstraWalkUtilityEstimator.NAME);
+		eqasimConfig.setEstimator(TransportMode.car, EBikeCarUtilityEstimator.NAME);
+		eqasimConfig.setEstimator(TransportMode.pt, EBikePtUtilityEstimator.NAME);
+		eqasimConfig.setEstimator(TransportMode.bike, EBikeBikeUtilityEstimator.NAME);
+		eqasimConfig.setEstimator(TransportMode.walk, EBikeWalkUtilityEstimator.NAME);
+		eqasimConfig.setEstimator("ebike", EBikeEBikeUtilityEstimator.NAME);
+		
+//		eqasimConfig.setEstimator(TransportMode.car, AstraCarUtilityEstimator.NAME);
+//		eqasimConfig.setEstimator(TransportMode.pt, AstraPtUtilityEstimator.NAME);
+//		eqasimConfig.setEstimator(TransportMode.bike, AstraBikeUtilityEstimator.NAME);
+//		eqasimConfig.setEstimator(TransportMode.walk, AstraWalkUtilityEstimator.NAME);
 
 		DiscreteModeChoiceConfigGroup dmcConfig = (DiscreteModeChoiceConfigGroup) config.getModules()
 				.get(DiscreteModeChoiceConfigGroup.GROUP_NAME);
@@ -75,7 +90,8 @@ public class AstraConfigurator extends EqasimConfigurator {
 		tripConstraints.add(InfiniteHeadwayConstraint.NAME);
 		dmcConfig.setTripConstraints(tripConstraints);
 
-		dmcConfig.setModeAvailability(AstraModeAvailability.NAME);		
+//		dmcConfig.setModeAvailability(AstraModeAvailability.NAME);
+		dmcConfig.setModeAvailability(EBikeModeAvailability.NAME);
 	}	
 
 	static public void adjustScenario(Scenario scenario) {
@@ -101,6 +117,19 @@ public class AstraConfigurator extends EqasimConfigurator {
 					if (random.nextDouble() > astraConfig.getBikeAvailability()) {
 						person.getAttributes().putAttribute("bikeAvailability", "FOR_NONE");
 					}
+				}
+				if (!person.getAttributes().getAttribute("bikeAvailability").equals("FOR_NONE")) {
+						if (random.nextDouble() <= astraConfig.getEBikeAvailability()) {
+							person.getAttributes().putAttribute("bikeAvailability", "EBIKE");
+							
+							for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
+								if (pe instanceof Leg) {
+									if (((Leg) pe).getMode() == "bike") {
+										((Leg) pe).setMode("ebike");
+									}
+								}	
+							}
+						}
 				}
 			}
 		}

@@ -1,5 +1,8 @@
 package ebikecity.project.travel_time;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +36,7 @@ public class SmoothingTravelTime implements TravelTime, LinkEnterEventHandler, L
 	private final int numberOfLinks;
 
 	private final Map<Id<Link>, Integer> id2index = new HashMap<>();
+	private final Map<Integer, Id<Link>> index2id = new HashMap<>();
 
 	private final double[][] cumulativeTravelTimes;
 	private final double[][] travelTimeCounts;
@@ -40,11 +44,13 @@ public class SmoothingTravelTime implements TravelTime, LinkEnterEventHandler, L
 	private final double[] defaults;
 
 	private final List<Map<Id<Vehicle>, Double>> enterTimes;
+	
+	private final String outputDirectory;
 
 	// Setup part: Handling indices and making space
 
 	public SmoothingTravelTime(double startTime, double endTime, double interval, double increasingAlpha,
-			double decreasingAlpha, boolean fixTravelTime, Network network) {
+			double decreasingAlpha, boolean fixTravelTime, Network network, String outputDirectory) {
 		this.increasingAlpha = increasingAlpha;
 		this.decreasingAlpha = decreasingAlpha;
 		this.fixTravelTime = fixTravelTime;
@@ -60,11 +66,15 @@ public class SmoothingTravelTime implements TravelTime, LinkEnterEventHandler, L
 		this.estimates = new double[numberOfLinks][numberOfTimeBins];
 		this.defaults = new double[numberOfLinks];
 		this.enterTimes = new ArrayList<>(numberOfLinks);
+		
+		
+		this.outputDirectory = outputDirectory;
 
 		int linkIndex = 0;
 
 		for (Link link : network.getLinks().values()) {
 			id2index.put(link.getId(), linkIndex);
+			index2id.put(linkIndex, link.getId());
 
 			double defaultValue = link.getLength() / link.getFreespeed();
 
@@ -141,6 +151,29 @@ public class SmoothingTravelTime implements TravelTime, LinkEnterEventHandler, L
 				cumulativeTravelTimes[l][t] = 0.0;
 			}
 		}
+		
+		// comment out until l.176 if you do not need travel time estimations to be stored
+		
+		String csvPath = outputDirectory + "/" + Integer.toString(event.getIteration()) + "_updated_tt.csv";
+		
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(csvPath))) {
+
+            // Iterate over the rows of the double[][] array and write each row to the CSV file
+			for (int i = 0; i < estimates.length; i++) {
+				double[] row = estimates[i];
+            	bufferedWriter.write(index2id.get(i).toString()+",");
+                for (int j = 0; j < row.length; j++) {
+                    bufferedWriter.write(String.valueOf(row[j]));
+                    if (j < row.length - 1) {
+                        bufferedWriter.write(",");
+                    }
+                }
+                bufferedWriter.newLine();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 		enterTimes.forEach(Map::clear);
 	}
@@ -160,12 +193,13 @@ public class SmoothingTravelTime implements TravelTime, LinkEnterEventHandler, L
 		if (enterTime != null) {
 			int startTimeIndex = getTimeIndex(enterTime);
 			int endTimeIndex = getTimeIndex(time);
-
+			
 			for (int index = startTimeIndex; index <= endTimeIndex; index++) {
 				cumulativeTravelTimes[linkIndex][index] += time - enterTime;
 				travelTimeCounts[linkIndex][index] += 1.0;
 			}
 		}
+		
 	}
 
 	@Override

@@ -44,7 +44,7 @@ public class RecursiveLogitMatLabRouter {
 		Map<Id<Node>, Integer> nodeIdToIndexMap = new HashMap<>();
 		ArrayList<Id> nodeIdList = new ArrayList<>();
 		for (Link link : network_milos.getLinks().values()) {
-			if (link.getAllowedModes().contains(TransportMode.car)) {
+			if (link.getAllowedModes().contains(TransportMode.bike)) {
 		        Id<Link> linkId = link.getId();
 		        Id<Node> nodeId = link.getToNode().getId();
 		        if (!linkIdToIndexMap.containsKey(linkId)) {
@@ -74,12 +74,12 @@ public class RecursiveLogitMatLabRouter {
         Map<String, Double> matrixMap = new HashMap<>();
         Map<String, Double> matrixMapExp = new HashMap<>();
 		for (Link link : network_milos.getLinks().values()) {
-		  	if (link.getAllowedModes().contains(TransportMode.car)) {
+		  	if (link.getAllowedModes().contains(TransportMode.bike)) {
 		  			Id<Node> fromNodeId = link.getFromNode().getId();
 		            Id<Link> linkId = link.getId();
 		            Set<Id<Link>> outgoingLinks = link.getToNode().getOutLinks().keySet();
 		            for (Id<Link> outgoingLinkId : outgoingLinks) {
-		            	if (network_milos.getLinks().get(outgoingLinkId).getAllowedModes().contains(TransportMode.car)) {
+		            	if (network_milos.getLinks().get(outgoingLinkId).getAllowedModes().contains(TransportMode.bike)) {
 		            		
 			                int outgoingLinkIndex = linkIdToIndexMap.get(outgoingLinkId);
 			                int currentLinkIndex = linkIdToIndexMap.get(linkId);
@@ -142,13 +142,13 @@ public class RecursiveLogitMatLabRouter {
 //            int randomIndex2 = random.nextInt(nodeIdList.size());
 //            Id<Node> originNodeId = nodeIdList.get(randomIndex2);
 //            System.out.println(originNodeId);
+//            
+            Id<Node> destinationNodeId = Id.createNodeId("2446");
+            Id<Node> originNodeId = Id.createNodeId("21622");
             
-//            Id<Node> destinationNodeId = Id.createNodeId("4926779092");
-//            Id<Node> originNodeId = Id.createNodeId("794063724");
-            
-            Id<Node> destinationNodeId = Id.createNodeId("92509791");
-            Id<Node> originNodeId = Id.createNodeId("241214622");
-            
+//            Id<Node> destinationNodeId = Id.createNodeId("92509791");
+//            Id<Node> originNodeId = Id.createNodeId("241214622");
+//            
 //            Id<Node> destinationNodeId = Id.createNodeId("3");
 //            Id<Node> originNodeId = Id.createNodeId("1");
             
@@ -199,7 +199,7 @@ public class RecursiveLogitMatLabRouter {
             		Map<Integer, Double> downstreamMapInitialLink = new HashMap<>();
             		
                 	for (Link inLink : network_milos.getNodes().get(currentInNodeId).getInLinks().values()) {  
-                		if (inLink.getAllowedModes().contains(TransportMode.car)) {
+                		if (inLink.getAllowedModes().contains(TransportMode.bike)) {
                 			currentInNodeInLinkIndex = linkIdToIndexMap.get(inLink.getId()); // needs to be bike link (simplify with bike-only network)
                 			
                 			System.out.println("check: " + inLink.getId() + " index: " + currentInNodeInLinkIndex);
@@ -222,7 +222,7 @@ public class RecursiveLogitMatLabRouter {
       	
             	double denominator = 0;
                 for (Link l: network_milos.getNodes().get(currentInNodeId).getOutLinks().values()) {
-                	if (l.getAllowedModes().contains(TransportMode.car)) {
+                	if (l.getAllowedModes().contains(TransportMode.bike)) {
 	                	int indexOutLink = linkIdToIndexMap.get(l.getId());
 	                	String matrixKey = currentInNodeInLinkIndex + "," + indexOutLink;
 	                	double sysUtil = matrixMapExp.get(matrixKey);
@@ -241,7 +241,7 @@ public class RecursiveLogitMatLabRouter {
                 ArrayList<Double> probValues = new ArrayList<>();
                 ArrayList<Id> linkIds = new ArrayList<>();
                 for (Link l: network_milos.getNodes().get(currentInNodeId).getOutLinks().values()) {
-                	if (l.getAllowedModes().contains(TransportMode.car)) {
+                	if (l.getAllowedModes().contains(TransportMode.bike)) {
 	                	int indexOutLink = linkIdToIndexMap.get(l.getId());
 	                	String matrixKey = currentInNodeInLinkIndex + "," + indexOutLink;
 	                	double sysUtil = matrixMapExp.get(matrixKey);
@@ -250,8 +250,9 @@ public class RecursiveLogitMatLabRouter {
 //	                	double downstreamUtil = Math.exp(downUtilScaleFactor * downstreamUtility[indexOutLink]);
 //	                	double downstreamUtil = Math.pow(downstreamUtility[indexOutLink], downUtilScaleFactor);
 	                	double nominator = (downstreamUtil * sysUtil);
+	                	System.out.println("link id " + l.getId());
 //	                	System.out.println("link id " + l.getId() + ", P= " + (nominator/denominator));
-	                	System.out.println("link id " + l.getId() + ", SysUtil= " + sysUtil + ", DownUtil= " + downstreamUtil + ", No=" + nominator + ", Deno= " + denominator + ", P= " + (nominator/denominator));
+//	                	System.out.println("link id " + l.getId() + ", SysUtil= " + sysUtil + ", DownUtil= " + downstreamUtil + ", No=" + nominator + ", Deno= " + denominator + ", P= " + (nominator/denominator));
 	                	probValues.add((nominator/denominator));
 	                	linkIds.add(l.getId());
 	                	downUtilValues.add(downstreamUtil);
@@ -261,15 +262,15 @@ public class RecursiveLogitMatLabRouter {
                 
 //                nextLinkId = linkIds.get(findMaxDownUtilProbLink(sysUtilValues, downUtilValues));
 //                nextLinkId = linkIds.get(sampleLink(probValues));
-                nextLinkId = linkIds.get(choseMaxProbLink(probValues));
+//                nextLinkId = linkIds.get(choseMaxProbLink(probValues));
 //                nextLinkId = linkIds.get(choseMaxProbLink(downUtilValues));
                 
-//                if (isFirstIteration2) {
-//                	nextLinkId = linkIds.get(sampleLink(probValues));
-//                	isFirstIteration2 = false;
-//                } else {
-//                	nextLinkId = linkIds.get(sampleLinkNoDoubleEntries(probValues, routeLinkIds, linkIds));
-//                }
+                if (isFirstIteration2) {
+                	nextLinkId = linkIds.get(sampleLink(probValues));
+                	isFirstIteration2 = false;
+                } else {
+                	nextLinkId = sampleLinkNoDoubleEntries(probValues, routeLinkIds, linkIds);
+                }
 
                 System.out.println("chosen link: " + nextLinkId); 
                 routeLinkIds.add(nextLinkId);
@@ -368,37 +369,42 @@ public class RecursiveLogitMatLabRouter {
         return maxIndex;
     }  
        
-    public static int sampleLinkNoDoubleEntries(ArrayList<Double> probabilities, ArrayList<Id> previousLinkIds, ArrayList<Id> linkIds) {
+    public static Id sampleLinkNoDoubleEntries(ArrayList<Double> probabilities, ArrayList<Id> previousLinkIds, ArrayList<Id> linkIds) {
+        
+        if (linkIds.size() > 1) {
+	    	for (int i = linkIds.size() - 1; i >= 0; i--) {
+	            Id currentId = linkIds.get(i);
+	            if (previousLinkIds.contains(currentId) && linkIds.size() > 1) {
+	                linkIds.remove(i);
+	                probabilities.remove(i);
+	                System.out.println("alternative removed");
+	            }
+	        }
+        }
+        
+        double sumOfProbabilities = probabilities.stream().mapToDouble(Double::doubleValue).sum();
+        if (sumOfProbabilities <= 0.0) {
+            throw new IllegalArgumentException("Sum of probabilities must be greater than 0.");
+        }
+        for (int i = 0; i < probabilities.size(); i++) {
+            probabilities.set(i, probabilities.get(i) / sumOfProbabilities);
+        }
+    	
         Random rand = new Random();
         double randomValue = rand.nextDouble(); // Generate a random number between 0 and 1
         double cumulativeProbability = 0.0;
-        int index = 0;
-        int returnIndex = 0;
+        
+        System.out.println("size: " + probabilities.size());
 
         for (int i = 0; i < probabilities.size(); i++) {
             cumulativeProbability += probabilities.get(i);
+
             if (randomValue <= cumulativeProbability) {
-            	index = i;
-            	returnIndex = i;
-            	break;
+                return linkIds.get(i); // Return the chosen alternative
             }
         }
         
-        if (previousLinkIds.contains(linkIds.get(index))) {
-        	if (probabilities.size() != 1) {
-        		if (returnIndex - 1 == -1) {
-        			returnIndex = 1;
-        		} else {
-        			returnIndex = returnIndex - 1;
-        		}
-        	}
-        }
-        
-        if (previousLinkIds.contains(linkIds.get(returnIndex))) {
-        	System.out.println("double entry");
-        }
-        
-        return returnIndex;
+        return null;
     }
     
 	private static void saveLinkMapToCSV(Map<Id<Link>, Integer> map, String filePath) {

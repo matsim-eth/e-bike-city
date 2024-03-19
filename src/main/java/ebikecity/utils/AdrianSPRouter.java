@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
@@ -17,6 +19,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.DijkstraFactory;
 import org.matsim.core.router.LinkWrapperFacility;
 import org.matsim.core.router.NetworkRoutingModule;
@@ -59,7 +62,7 @@ public class AdrianSPRouter {
 
 		try {
 			CSVWriter writer = new CSVWriter(new FileWriter(outputPath), ';', CSVWriter.NO_QUOTE_CHARACTER);
-			String[] columns = { "id", "networkdistance", "traveltime" };
+			String[] columns = { "id", "networkdistance", "traveltime", "links" };
 			writer.writeNext(columns);
 			CSVReader reader = new CSVReader(new FileReader(relationsCsvPath), ';');
 
@@ -75,8 +78,19 @@ public class AdrianSPRouter {
 					float toY = Float.parseFloat(arr[4]);
 					double startTime = Double.parseDouble(arr[5]);
 					Leg leg = this.fetch(fromX, fromY, toX, toY, startTime);
+					List<Id<Link>> linkIds = ((NetworkRoute)leg.getRoute()).getLinkIds();
+					String links = new String("");
+					boolean start = true;
+					for (Id<Link> linkid : linkIds) {
+						if (!start) 
+							links.concat(",");
+						else
+							start = false;
+						links.concat(linkid.toString());
+						
+					}
 					String[] toWrite = { id, Double.toString(leg.getRoute().getDistance()),
-							Double.toString(leg.getRoute().getTravelTime().seconds()) };
+							Double.toString(leg.getRoute().getTravelTime().seconds()), links };
 					writer.writeNext(toWrite);
 				}
 
@@ -117,7 +131,7 @@ public class AdrianSPRouter {
 		Network network = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(network).readFile(runInputFolder + "/" + "network.xml.gz");
 		Network reducedNetwork = NetworkUtils.createNetwork();
-		new TransportModeNetworkFilter(network).filter(reducedNetwork, CollectionUtils.stringToSet(TransportMode.car));
+		new TransportModeNetworkFilter(network).filter(reducedNetwork, CollectionUtils.stringToSet(TransportMode.bike));
 
 		AdrianSPRouter ods;
 		if (calcCongestedTravelTimes) {

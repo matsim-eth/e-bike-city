@@ -12,7 +12,6 @@ import java.util.List;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Activity;
@@ -24,7 +23,6 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.DijkstraFactory;
 import org.matsim.core.router.LinkWrapperFacility;
 import org.matsim.core.router.NetworkRoutingModule;
@@ -39,12 +37,12 @@ import org.matsim.facilities.Facility;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
-public class AdrianSPRouter {
+public class AdrianSPRouter2 {
 
 	private final Network network;
 	private final NetworkRoutingModule router;
 
-	public AdrianSPRouter(Network network, String configPath, String eventsFilename) {
+	public AdrianSPRouter2(Network network, String configPath, String eventsFilename) {
 		this.network = network;
 
 		Config config = ConfigUtils.loadConfig(configPath);
@@ -67,7 +65,7 @@ public class AdrianSPRouter {
 
 		try {
 			CSVWriter writer = new CSVWriter(new FileWriter(outputPath), ';', CSVWriter.NO_QUOTE_CHARACTER);
-			String[] columns = { "id", "networkdistance", "traveltime", "links" };
+			String[] columns = { "id", "networkdistance", "traveltime" };
 			writer.writeNext(columns);
 			CSVReader reader = new CSVReader(new FileReader(relationsCsvPath), ';');
 
@@ -83,25 +81,18 @@ public class AdrianSPRouter {
 					float toY = Float.parseFloat(arr[4]);
 					double startTime = Double.parseDouble(arr[5]);
 					Leg leg = this.fetch(fromX, fromY, toX, toY, startTime);
-					List<Id<Link>> linkIds = ((NetworkRoute)leg.getRoute()).getLinkIds();
-					ArrayList<String> routeList = new ArrayList();
-					String links = new String("");
-					boolean start = true;
-					for (Id<Link> linkid : linkIds) {
-						System.out.println(linkid);
-					    if (!start) {
-					        links += ",";
-					    } else {
-					        start = false;
-					    }
-					    links += linkid.toString();
-					    routeList.add(linkid.toString());
-					}
 					
-					System.out.println(links);
-					saveRoute(routeList);
+					String route = leg.getRoute().getRouteDescription();
+					ArrayList<String> routeList = new ArrayList();
+			        String[] items = route.split(" ");			       
+			        for (String item : items) {
+//			            System.out.println(item);
+			            routeList.add(item);
+			        }
+			        saveRoute(routeList);
+
 					String[] toWrite = { id, Double.toString(leg.getRoute().getDistance()),
-							Double.toString(leg.getRoute().getTravelTime().seconds()), links };
+							Double.toString(leg.getRoute().getTravelTime().seconds()) };
 					writer.writeNext(toWrite);
 				}
 
@@ -165,15 +156,15 @@ public class AdrianSPRouter {
 		Network reducedNetwork = NetworkUtils.createNetwork();
 		new TransportModeNetworkFilter(network).filter(reducedNetwork, CollectionUtils.stringToSet(TransportMode.bike));
 
-		AdrianSPRouter ods;
+		AdrianSPRouter2 ods;
 		if (calcCongestedTravelTimes) {
 			String config = runInputFolder + "/" + "output_config.xml";
 			String events = runInputFolder + "/" + "output_events.xml.gz";
-			ods = new AdrianSPRouter(reducedNetwork, config, events);
+			ods = new AdrianSPRouter2(reducedNetwork, config, events);
 		} else {
 			// TODO: routing with freeflow travel times is not yet implemented!!
 			String config = runInputFolder + "/" + "config.xml";
-			ods = new AdrianSPRouter(reducedNetwork, config, null);
+			ods = new AdrianSPRouter2(reducedNetwork, config, null);
 		}
 		ods.run(odsFile, outputFile);
 

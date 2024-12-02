@@ -36,7 +36,7 @@ public class AccessEgressCarPredictor extends  CarPredictor {
 		double cost_MU = costModel.calculateCost_MU(person, trip, elements);
 
 		double euclideanDistance_km = PredictorUtils.calculateEuclideanDistance_km(trip);
-		double accessEgressTime_min = parameters.car.constantAccessEgressWalkTime_min;
+		double accessEgressTime_min = parameters.car.additionalAccessEgressWalkTime_min;
 
 		return new CarVariables(travelTime_min, cost_MU, euclideanDistance_km, accessEgressTime_min);
 	}

@@ -1,7 +1,6 @@
 package ebikecity.project.mode_choice;
 
 import java.io.IOException;
-
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,6 +21,7 @@ import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.util.TravelTime;
@@ -40,22 +40,29 @@ import ebikecity.project.mode_choice.estimators.UtilityControlerListener;
 import ebikecity.project.travel_time.SmoothingTravelTimeModule;
 
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
-import org.matsim.core.config.groups.QSimConfigGroup;
 
-public class RunBikeSimulation {
-	
+public class RunBikeSimulation {	
 	
 	private static final String BIKE=TransportMode.bike;
 	
 	static public void main(String[] args) throws ConfigurationException, MalformedURLException, IOException {
 		CommandLine cmd = new CommandLine.Builder(args) //
 				.requireOptions("config-path") //
-				.allowPrefixes( "mode-parameter", "cost-parameter") //
+				.allowPrefixes( "mode-parameter", "cost-parameter", "preventwaitingtoentertraffic") //
 				.build();
 
-		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), AstraConfigurator.getConfigGroups());
-		AstraConfigurator.configure(config);
+		AstraConfigurator astraConfigurator = new AstraConfigurator();
+		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), astraConfigurator.getConfigGroups());
+		astraConfigurator.configure(config);
 		cmd.applyConfiguration(config);
+		
+		if (cmd.hasOption("preventwaitingtoentertraffic")) {
+			if (cmd.getOption("preventwaitingtoentertraffic").get().equals("y")) {
+				System.out.println("Preventing Waiting To Enter Traffic switched to YES");
+				((QSimConfigGroup) config.getModules().get(QSimConfigGroup.GROUP_NAME))
+						.setPcuThresholdForFlowCapacityEasing(1.0);
+			}
+		}
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		
@@ -63,8 +70,6 @@ public class RunBikeSimulation {
 		
 		for (Link link : scenario.getNetwork().getLinks().values()) {
 			if (link.getAllowedModes().contains("car")) {
-			
-			// if (net.getLinks().values().contains(link)) {
 				
 				if (!link.getAttributes().getAttribute("osm:way:highway").toString().contains("trunk") &&
 						!link.getAttributes().getAttribute("osm:way:highway").toString().contains("motorway")) {
@@ -72,30 +77,24 @@ public class RunBikeSimulation {
 					allowedModes.add(BIKE);
 					link.setAllowedModes(allowedModes);
 				}
-				
 			}
-			
 		}
 		
-		for (Person person : scenario.getPopulation().getPersons().values()) {
-
-			
+		for (Person person : scenario.getPopulation().getPersons().values()) {			
 			for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
 				if (pe instanceof Leg) {
 					if (((Leg) pe).getMode() == BIKE) {
 						((Leg) pe).setRoute(null);
-						// ((Leg) pe).setTravelTime(null);
 					}
 				}
 			}
 		}
 		
-		
-
-		SwitzerlandConfigurator.configureScenario(scenario);
+		SwitzerlandConfigurator switzerlandConfigurator = new SwitzerlandConfigurator();
+		switzerlandConfigurator.configureScenario(scenario);
 		ScenarioUtils.loadScenario(scenario);
-		SwitzerlandConfigurator.adjustScenario(scenario);
-		AstraConfigurator.adjustScenario(scenario);
+		switzerlandConfigurator.adjustScenario(scenario);
+		astraConfigurator.adjustScenario(scenario);
 
 		EqasimConfigGroup eqasimConfig = EqasimConfigGroup.get(config);
 		
@@ -117,14 +116,10 @@ public class RunBikeSimulation {
 				link.setFreespeed(link.getLength() / travelTime);
 			}
 		}
-		
-			
-		
-		// set config such that the mode vehicles come from vehicles data:
-		
-		scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
 				
-			
+		// set config such that the mode vehicles come from vehicles data:
+			scenario.getConfig().qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
+					
 		// create all vehicleTypes requested by planscalcroute networkModes
 
 		final VehiclesFactory vf = VehicleUtils.getFactory();
@@ -141,13 +136,13 @@ public class RunBikeSimulation {
 		// EqasimLinkSpeedCalculator deactivated!
 
 		Controler controler = new Controler(scenario);
-		SwitzerlandConfigurator.configureController(controler);
+		switzerlandConfigurator.configureController(controler);
 		controler.addOverridingModule(new EqasimAnalysisModule());
 		controler.addOverridingModule(new EqasimModeChoiceModule());
 		controler.addOverridingModule(new SwissModeChoiceModule(cmd));
 		controler.addOverridingModule(new AstraModule(cmd));
 
-		AstraConfigurator.configureController(controler, cmd);
+		astraConfigurator.configureController(controler, cmd);
 
 		controler.addOverridingModule(new SmoothingTravelTimeModule());
 		
@@ -185,7 +180,6 @@ public class RunBikeSimulation {
 
 						// the link travel time is computed from that speed:
 						// return link.getLength()/actualSpeed ;
-						// use vod instead of length
 						String vod = link.getAttributes().getAttribute("osm:way:cost_cycling_>").toString();
 						double vodd = 1000000000;
 						if (!vod.equals("inf")) {
@@ -199,7 +193,6 @@ public class RunBikeSimulation {
 			}
 		} ) ;
 		
-//		controler.addControlerListener(new UtilityControlerListener(controler.getConfig().controler().getOutputDirectory()));
 
 		controler.run();
 	}

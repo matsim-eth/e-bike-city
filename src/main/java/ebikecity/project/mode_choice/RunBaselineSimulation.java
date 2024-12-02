@@ -14,6 +14,7 @@ import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 
@@ -25,19 +26,29 @@ public class RunBaselineSimulation {
 	static public void main(String[] args) throws ConfigurationException, MalformedURLException, IOException {
 		CommandLine cmd = new CommandLine.Builder(args) //
 				.requireOptions("config-path") //
-				.allowPrefixes( "mode-parameter", "cost-parameter") //
+				.allowPrefixes( "mode-parameter", "cost-parameter", "preventwaitingtoentertraffic") //
 				.build();
 
-		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), AstraConfigurator.getConfigGroups());
-		AstraConfigurator.configure(config);
+		AstraConfigurator astraConfigurator = new AstraConfigurator();
+		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), astraConfigurator.getConfigGroups());
+		astraConfigurator.configure(config);
 		cmd.applyConfiguration(config);
+		
+		if (cmd.hasOption("preventwaitingtoentertraffic")) {
+			if (cmd.getOption("preventwaitingtoentertraffic").get().equals("y")) {
+				System.out.println("Preventing Waiting To Enter Traffic switched to YES");
+				((QSimConfigGroup) config.getModules().get(QSimConfigGroup.GROUP_NAME))
+						.setPcuThresholdForFlowCapacityEasing(1.0);
+			}
+		}
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
 
-		SwitzerlandConfigurator.configureScenario(scenario);
+		SwitzerlandConfigurator switzerlandConfigurator = new SwitzerlandConfigurator();
+		switzerlandConfigurator.configureScenario(scenario);
 		ScenarioUtils.loadScenario(scenario);
-		SwitzerlandConfigurator.adjustScenario(scenario);
-		AstraConfigurator.adjustScenario(scenario);
+		switzerlandConfigurator.adjustScenario(scenario);
+		astraConfigurator.adjustScenario(scenario);
 
 		EqasimConfigGroup eqasimConfig = EqasimConfigGroup.get(config);
 
@@ -61,13 +72,13 @@ public class RunBaselineSimulation {
 		// EqasimLinkSpeedCalcilator deactivated!
 
 		Controler controller = new Controler(scenario);
-		SwitzerlandConfigurator.configureController(controller);
+		switzerlandConfigurator.configureController(controller);
 		controller.addOverridingModule(new EqasimAnalysisModule());
 		controller.addOverridingModule(new EqasimModeChoiceModule());
 		controller.addOverridingModule(new SwissModeChoiceModule(cmd));
 		controller.addOverridingModule(new AstraModule(cmd));
 
-		AstraConfigurator.configureController(controller, cmd);
+		astraConfigurator.configureController(controller, cmd);
 
 		controller.addOverridingModule(new SmoothingTravelTimeModule());
 		

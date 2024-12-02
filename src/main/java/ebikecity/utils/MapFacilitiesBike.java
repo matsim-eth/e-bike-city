@@ -17,6 +17,7 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.config.groups.NetworkConfigGroup;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -66,11 +67,11 @@ public class MapFacilitiesBike {
 
 		MatsimFacilitiesReader facReader = new MatsimFacilitiesReader(scenario);
 		facReader.readFile(args[2]);
-
-
-				
+		
 		// filter all car links
-		NetworkFilterManager n = new NetworkFilterManager(scenario.getNetwork());
+		Network network = scenario.getNetwork();
+		NetworkConfigGroup networkConfigGroup = config.network();
+		NetworkFilterManager n = new NetworkFilterManager(scenario.getNetwork(), networkConfigGroup);
 		n.addLinkFilter(new NetworkLinkFilter() {
 					
 			@Override

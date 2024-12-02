@@ -38,7 +38,9 @@ public class TripsToursCount {
 				.requireOptions("config-path") //
 				.allowPrefixes( "mode-parameter", "cost-parameter") //
 				.build();
-		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), AstraConfigurator.getConfigGroups());
+				
+		AstraConfigurator astraConfigurator = new AstraConfigurator();
+		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), astraConfigurator.getConfigGroups());
 		
 		Scenario scenario = ScenarioUtils.createMutableScenario(config);
 

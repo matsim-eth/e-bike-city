@@ -1,6 +1,5 @@
 package ebikecity.utils;
 
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +21,7 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.config.groups.NetworkConfigGroup;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -67,7 +67,6 @@ public class MapFacilities {
 			CoordinateReferenceSystem crs = MGC.getCRS("WGS84");
 			GeodeticCalculator calc = new GeodeticCalculator(crs);
 			
-			
 			CoordinateTransformation tf = TransformationFactory.getCoordinateTransformation("CH1903_LV03_Plus", "WGS84");
 			Coord fromNode1 = tf.transform(link1.getFromNode().getCoord());
 			Coord toNode1 = tf.transform(link1.getToNode().getCoord());
@@ -107,18 +106,18 @@ public class MapFacilities {
 		facReader.readFile(args[2]);
 
 		// scenario for new network
+		NetworkConfigGroup networkConfigGroup = config.network();
 		Config configNew = ConfigUtils.createConfig();
 
 		Scenario scenarioNew = ScenarioUtils.createMutableScenario(configNew);
 
 		MatsimNetworkReader netReader = new MatsimNetworkReader(scenarioNew.getNetwork());
-		netReader.readFile(args[3]);
-		
+		netReader.readFile(args[3]);			
 						
 		// set up link filter for new network
 				
 		// all car links
-		NetworkFilterManager n = new NetworkFilterManager(scenarioNew.getNetwork());
+		NetworkFilterManager n = new NetworkFilterManager(scenarioNew.getNetwork(), networkConfigGroup);
 		n.addLinkFilter(new NetworkLinkFilter() {
 					
 			@Override
@@ -128,7 +127,7 @@ public class MapFacilities {
 		});
 				
 		// all motorway links
-		NetworkFilterManager m = new NetworkFilterManager(scenarioNew.getNetwork());
+		NetworkFilterManager m = new NetworkFilterManager(scenarioNew.getNetwork(), networkConfigGroup);
 		m.addLinkFilter(new NetworkLinkFilter() {
 					
 			@Override
@@ -139,7 +138,7 @@ public class MapFacilities {
 		});
 		
 		// all motorway link links
-				NetworkFilterManager ml = new NetworkFilterManager(scenarioNew.getNetwork());
+		NetworkFilterManager ml = new NetworkFilterManager(scenarioNew.getNetwork(), networkConfigGroup);
 				ml.addLinkFilter(new NetworkLinkFilter() {
 							
 					@Override
@@ -150,7 +149,7 @@ public class MapFacilities {
 				});
 				
 		// all trunk links
-		NetworkFilterManager t = new NetworkFilterManager(scenarioNew.getNetwork());
+		NetworkFilterManager t = new NetworkFilterManager(scenarioNew.getNetwork(), networkConfigGroup);
 		t.addLinkFilter(new NetworkLinkFilter() {
 					
 			@Override
@@ -161,7 +160,7 @@ public class MapFacilities {
 		});
 		
 		// all trunk link links
-				NetworkFilterManager tl = new NetworkFilterManager(scenarioNew.getNetwork());
+		NetworkFilterManager tl = new NetworkFilterManager(scenarioNew.getNetwork(), networkConfigGroup);
 				tl.addLinkFilter(new NetworkLinkFilter() {
 							
 					@Override
@@ -172,7 +171,7 @@ public class MapFacilities {
 				});
 				
 		// all primary links
-		NetworkFilterManager p = new NetworkFilterManager(scenarioNew.getNetwork());
+		NetworkFilterManager p = new NetworkFilterManager(scenarioNew.getNetwork(), networkConfigGroup);
 		p.addLinkFilter(new NetworkLinkFilter() {
 					
 			@Override
@@ -182,17 +181,12 @@ public class MapFacilities {
 					
 		});
 				
-				
 		// filtered subnetworks
 			
-		Network nn = n.applyFilters();
-				
-		Network nm = m.applyFilters();
-		
-		Network nml = ml.applyFilters();
-			
-		Network nt = t.applyFilters();
-		
+		Network nn = n.applyFilters();				
+		Network nm = m.applyFilters();		
+		Network nml = ml.applyFilters();			
+		Network nt = t.applyFilters();		
 		Network ntl = tl.applyFilters();
 		
 		// if there are no trunk links in the new network (but maybe in the network cut by eqasim), 
@@ -202,8 +196,7 @@ public class MapFacilities {
 			ntl = nml;
 			t = m;
 			tl = ml;
-		}		
-				
+		}				
 			
 		// map the facilities
 		
@@ -234,14 +227,11 @@ public class MapFacilities {
 					nmtp = p.applyFilters();
 				}
 				
-				
 				Map<Id<Link>, Double> nearLinks = new HashMap<>();
 				
 				for (int i = 0; i < 5; i++) {
 					
 					Link nearestLink = NetworkUtils.getNearestLinkExactly(nmtp, facility.getCoord());
-					
-					// System.out.println("motorway" + nearestLink.getId().toString());
 					
 					nearLinks.put(nearestLink.getId(), calculateAbsAngle(nearestLink, originalLink));
 					
@@ -264,9 +254,7 @@ public class MapFacilities {
 			
 				Node toNode = nearestLink.getToNode();
 			
-				// Map<Id<Link>, Link> map = (Map<Id<Link>, Link>) fromNode.getInLinks().values();
 				Collection<Link> inLinks = (Collection<Link>) fromNode.getInLinks().values();
-				
 							
 				Link oppositeLink = null;
 				
@@ -296,8 +284,7 @@ public class MapFacilities {
 		new FacilitiesWriter(scenario.getActivityFacilities()).write(args[5]);
 		
 		MatsimFacilitiesReader facReaderNew = new MatsimFacilitiesReader(scenarioNew);
-		facReaderNew.readFile(args[5]);
-		
+		facReaderNew.readFile(args[5]);		
 				
 		// map the activities in the population
 		
@@ -312,7 +299,6 @@ public class MapFacilities {
 				person.getPlans().remove(removePlan);
 			}
 			
-			
 			// set link id of activities to link id from now mapped facility
 			for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
 				if (pe instanceof Activity) {
@@ -321,7 +307,6 @@ public class MapFacilities {
 						Id<Link> linkID = scenarioNew.getActivityFacilities().getFacilities().get(((Activity) pe).getFacilityId()).getLinkId();
 						((Activity) pe).setLinkId(linkID);
 					}
-					
 				}
 			}
 			
@@ -329,7 +314,6 @@ public class MapFacilities {
 			for (Trip trip : trips) {
 				for (Leg leg : trip.getLegsOnly()) {
 					leg.setRoute(null);
-
 				}
 			}		
 		}
@@ -339,5 +323,4 @@ public class MapFacilities {
 		new PopulationWriter(scenario.getPopulation()).write(args[4]);
 			
 	}
-	
 }

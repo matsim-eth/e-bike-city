@@ -1,12 +1,12 @@
 package ebikecity.utils;
 
-
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.NetworkConfigGroup;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -41,12 +41,10 @@ public class ManipulateNetwork {
 		for (Link link : filter.getLinks().values()) {
 			net.removeLink(link.getId());
 			Double num_lanes = link.getNumberOfLanes();
-			// System.out.println(num_lanes.toString());
 			if (num_lanes > nlanes) {
 				link.setNumberOfLanes(num_lanes - nlanes);
 			}
-			net.addLink(link);
-			
+			net.addLink(link);			
 		}
 	}
 
@@ -56,17 +54,16 @@ public class ManipulateNetwork {
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createMutableScenario(config);
 		MatsimNetworkReader netReader = new MatsimNetworkReader(scenario.getNetwork());
-		netReader.readFile(args[0]);
-		
+		netReader.readFile(args[0]);		
 		
 		// complete network
 		Network n = scenario.getNetwork();
-		
+		NetworkConfigGroup networkConfigGroup = config.network();		
 		
 		// filtered networks
 		
 		// car links
-		NetworkFilterManager c = new NetworkFilterManager(scenario.getNetwork());
+		NetworkFilterManager c = new NetworkFilterManager(scenario.getNetwork(), networkConfigGroup);
 		c.addLinkFilter(new NetworkLinkFilter() {
 			
 			@Override
@@ -80,7 +77,7 @@ public class ManipulateNetwork {
 		Network nc = c.applyFilters();
 		
 		// motorway links
-		NetworkFilterManager m = new NetworkFilterManager(nc);
+		NetworkFilterManager m = new NetworkFilterManager(nc, networkConfigGroup);
 		m.addLinkFilter(new NetworkLinkFilter() {
 			
 			@Override
@@ -92,7 +89,7 @@ public class ManipulateNetwork {
 		Network ncm = m.applyFilters();
 		
 		// trunk links
-		NetworkFilterManager tr = new NetworkFilterManager(nc);
+		NetworkFilterManager tr = new NetworkFilterManager(nc, networkConfigGroup);
 		tr.addLinkFilter(new NetworkLinkFilter() {
 			
 			@Override
@@ -104,7 +101,7 @@ public class ManipulateNetwork {
 		Network nctr = tr.applyFilters();
 		
 		// primary links
-		NetworkFilterManager p = new NetworkFilterManager(nc);
+		NetworkFilterManager p = new NetworkFilterManager(nc, networkConfigGroup);
 		p.addLinkFilter(new NetworkLinkFilter() {
 			
 			@Override
@@ -116,7 +113,7 @@ public class ManipulateNetwork {
 		Network ncp= p.applyFilters();
 		
 		// secondary links
-		NetworkFilterManager s = new NetworkFilterManager(nc);
+		NetworkFilterManager s = new NetworkFilterManager(nc, networkConfigGroup);
 		s.addLinkFilter(new NetworkLinkFilter() {
 			
 			@Override
@@ -128,7 +125,7 @@ public class ManipulateNetwork {
 		Network ncs = s.applyFilters();
 		
 		// tertiary links
-		NetworkFilterManager t = new NetworkFilterManager(nc);
+		NetworkFilterManager t = new NetworkFilterManager(nc, networkConfigGroup);
 		t.addLinkFilter(new NetworkLinkFilter() {
 				
 			@Override
@@ -140,7 +137,7 @@ public class ManipulateNetwork {
 		Network nct = t.applyFilters();
 		
 		// unclassified links
-		NetworkFilterManager u = new NetworkFilterManager(nc);
+		NetworkFilterManager u = new NetworkFilterManager(nc, networkConfigGroup);
 		u.addLinkFilter(new NetworkLinkFilter() {
 				
 			@Override
@@ -152,7 +149,7 @@ public class ManipulateNetwork {
 		Network ncu = u.applyFilters();
 		
 		// residential links
-		NetworkFilterManager r = new NetworkFilterManager(nc);
+		NetworkFilterManager r = new NetworkFilterManager(nc, networkConfigGroup);
 		r.addLinkFilter(new NetworkLinkFilter() {
 				
 			@Override

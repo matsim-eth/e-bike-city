@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org</groupId>
   <artifactId>ebike.city</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>15-ebike</version>
   <profiles>
     <profile>
       <id>standalone</id>
@@ -18,18 +18,6 @@
                 <goals>
                   <goal>shade</goal>
                 </goals>
-                <configuration>
-                  <filters>
-                    <filter>
-                      <artifact>*:*</artifact>
-                      <excludes>
-                        <exclude>META-INF/*.SF</exclude>
-                        <exclude>META-INF/*.DSA</exclude>
-                        <exclude>META-INF/*.RSA</exclude>
-                      </excludes>
-                    </filter>
-                  </filters>
-                </configuration>
               </execution>
             </executions>
             <configuration>
@@ -65,8 +53,9 @@
     </repository>
   </repositories>
   <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
     <geotools.version>24.2</geotools.version>
+    <matsim.version>15.0</matsim.version>
   </properties>
 </project>

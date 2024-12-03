@@ -35,7 +35,8 @@ public class RunImputeCityAttribute {
 
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
-		EqasimConfigurator.configureScenario(scenario);
+		EqasimConfigurator eqasimConfigurator = new EqasimConfigurator();
+		eqasimConfigurator.configureScenario(scenario);
 
 		new PopulationReader(scenario).readFile(inputPath.toString());
 

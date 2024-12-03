@@ -61,19 +61,28 @@ public class RunBikeSimulation {
 	static public void main(String[] args) throws ConfigurationException, MalformedURLException, IOException {
 		CommandLine cmd = new CommandLine.Builder(args) //
 				.requireOptions("config-path") //
-				.allowPrefixes( "mode-parameter", "cost-parameter") //
+				.allowPrefixes( "mode-parameter", "cost-parameter", "preventwaitingtoentertraffic") //
 				.build();
 
-		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), AstraConfigurator.getConfigGroups());
-		AstraConfigurator.configure(config);
+		AstraConfigurator astraConfigurator = new AstraConfigurator();
+		Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"), astraConfigurator.getConfigGroups());
+		astraConfigurator.configure(config);
 		cmd.applyConfiguration(config);
+		
+		if (cmd.hasOption("preventwaitingtoentertraffic")) {
+			if (cmd.getOption("preventwaitingtoentertraffic").get().equals("y")) {
+				((QSimConfigGroup) config.getModules().get(QSimConfigGroup.GROUP_NAME))
+						.setPcuThresholdForFlowCapacityEasing(1.0);
+			}
+		}
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
 
-		SwitzerlandConfigurator.configureScenario(scenario);
+		SwitzerlandConfigurator switzerlandConfigurator = new SwitzerlandConfigurator();
+		switzerlandConfigurator.configureScenario(scenario);
 		ScenarioUtils.loadScenario(scenario);
-		SwitzerlandConfigurator.adjustScenario(scenario);
-		AstraConfigurator.adjustScenario(scenario);
+		switzerlandConfigurator.adjustScenario(scenario);
+		astraConfigurator.adjustScenario(scenario);
 
 		EqasimConfigGroup eqasimConfig = EqasimConfigGroup.get(config);
 		
@@ -167,7 +176,7 @@ public class RunBikeSimulation {
 		// EqasimLinkSpeedCalculator deactivated!
 
 		Controler controler = new Controler(scenario);
-		SwitzerlandConfigurator.configureController(controler);
+		switzerlandConfigurator.configureController(controler);
 		controler.addOverridingModule(new EqasimAnalysisModule());
 		controler.addOverridingModule(new EqasimModeChoiceModule());
 		controler.addOverridingModule(new SwissModeChoiceModule(cmd));

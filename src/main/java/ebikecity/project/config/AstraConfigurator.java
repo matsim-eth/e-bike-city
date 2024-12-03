@@ -7,7 +7,6 @@ import java.util.Set;
 import org.eqasim.core.components.config.EqasimConfigGroup;
 import org.eqasim.core.components.transit.EqasimTransitQSimModule;
 import org.eqasim.core.simulation.EqasimConfigurator;
-import org.eqasim.core.simulation.calibration.CalibrationConfigGroup;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -31,15 +30,15 @@ import ebikecity.project.mode_choice.estimators.AstraPtUtilityEstimator;
 import ebikecity.project.mode_choice.estimators.AstraWalkUtilityEstimator;
 
 public class AstraConfigurator extends EqasimConfigurator {
-	private AstraConfigurator() {
+	public AstraConfigurator() {
 	}
 
-	static public ConfigGroup[] getConfigGroups() {
+	public ConfigGroup[] getConfigGroups() {
 		return new ConfigGroup[] { //
 				new SwissRailRaptorConfigGroup(), //
 				new EqasimConfigGroup(), //
 				new DiscreteModeChoiceConfigGroup(), //
-				new CalibrationConfigGroup(), //
+				//new CalibrationConfigGroup(), //
 				new AstraConfigGroup()
 		};
 	}
@@ -60,7 +59,7 @@ public class AstraConfigurator extends EqasimConfigurator {
 		}
 
 		// General eqasim
-		eqasimConfig.setTripAnalysisInterval(config.controler().getWriteEventsInterval());
+		eqasimConfig.setAnalysisInterval(config.controler().getWriteEventsInterval());
 
 		// Estimators
 		eqasimConfig.setEstimator(TransportMode.car, AstraCarUtilityEstimator.NAME);
@@ -78,7 +77,7 @@ public class AstraConfigurator extends EqasimConfigurator {
 		dmcConfig.setModeAvailability(AstraModeAvailability.NAME);		
 	}	
 
-	static public void adjustScenario(Scenario scenario) {
+	public void adjustScenario(Scenario scenario) {
 		for (Household household : scenario.getHouseholds().getHouseholds().values()) {
 			for (Id<Person> memberId : household.getMemberIds()) {
 				Person person = scenario.getPopulation().getPersons().get(memberId);

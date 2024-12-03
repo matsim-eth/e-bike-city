@@ -23,9 +23,11 @@ public class RunImputeHeadway {
                 .requireOptions("config-path", "output-path") //
                 .allowOptions("threads", "batch-size") //
                 .build();
+                
+        EqasimConfigurator eqasimConfigurator = new EqasimConfigurator();
 
         Config config = ConfigUtils.loadConfig(cmd.getOptionStrict("config-path"),
-                EqasimConfigurator.getConfigGroups());
+                eqasimConfigurator.getConfigGroups());
         cmd.applyConfiguration(config);
         config.strategy().clearStrategySettings();
 
@@ -37,8 +39,8 @@ public class RunImputeHeadway {
         scenario.getPopulation().getFactory().getRouteFactories().setRouteFactory(TransitPassengerRoute.class, new DefaultTransitPassengerRouteFactory());
         ScenarioUtils.loadScenario(scenario);
 
-        Injector injector = new InjectorBuilder(scenario) //
-                .addOverridingModules(EqasimConfigurator.getModules()) //
+	Injector injector = new InjectorBuilder(scenario) //
+                .addOverridingModules(eqasimConfigurator.getModules()) //
                 .addOverridingModule(new HeadwayImputerModule(numberOfThreads, batchSize, true, 1.0 * 3600.0)) //
                 .build();
 

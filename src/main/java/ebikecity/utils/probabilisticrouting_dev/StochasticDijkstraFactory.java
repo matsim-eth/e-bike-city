@@ -1,0 +1,28 @@
+package ebikecity.utils.probabilisticrouting_dev;
+
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * @author mrieser / Simunto, sponsored by SBB Swiss Federal Railways
+ */
+public class StochasticDijkstraFactory implements LeastCostPathCalculatorFactory {
+
+	private final Map<Network, SpeedyGraph> graphs = new ConcurrentHashMap<>();
+
+	@Override
+	public LeastCostPathCalculator createPathCalculator(Network network, TravelDisutility travelCosts, TravelTime travelTimes) {
+		SpeedyGraph graph = graphs.get(network);
+		if (graph == null) {
+			graph = new SpeedyGraph(network);
+			graphs.put(network, graph);
+		}
+		return new StochasticDijkstra(graph, travelTimes, travelCosts);
+	}
+}

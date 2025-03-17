@@ -20,25 +20,21 @@ public class EBCModeAvailability implements ModeAvailability {
 	}
 
 	@Override
-	public Collection<String> getAvailableModes(Person person, List<DiscreteModeChoiceTrip> trips) {
-		Collection<String> modes = delegate.getAvailableModes(person, trips);
-		
-		// Check e bike availability
-		if (person.getAttributes().getAttribute("isFreight").toString().equals("false")) {
-				if (person.getAttributes().getAttribute("bikeAvailability").equals("EBIKE")) {
-					modes.remove(TransportMode.bike);
-					modes.add("ebike");
-				}
-		}
+    public Collection<String> getAvailableModes(Person person, List<DiscreteModeChoiceTrip> trips) {
+        Collection<String> modes = delegate.getAvailableModes(person, trips);
 
-		// Check spedelec availability
-		if (person.getAttributes().getAttribute("isFreight").toString().equals("false")) {
-				if (person.getAttributes().getAttribute("bikeAvailability").equals("SPEDELEC")) {
-					modes.remove(TransportMode.bike);
-					modes.add("spedelec");
-				}
-		}
+        if (person.getAttributes().getAttribute("isFreight").toString().equals("false")) {
+            if (person.getAttributes().getAttribute("bikeAvailability").equals("AVAILABLE")) {
+                modes.add(TransportMode.bike);
+            }
+            if (person.getAttributes().getAttribute("ebikeAvailability").equals("AVAILABLE")) {
+                modes.add("ebike");
+            }
+            if (person.getAttributes().getAttribute("spedelecAvailability").equals("AVAILABLE")) {
+                modes.add("spedelec");
+            }
+        }
 
-		return modes;
+        return modes;
 	}
 }

@@ -87,46 +87,25 @@ public class EBCConfigurator extends EqasimConfigurator {
 		adjustBikeAvailability(scenario);
 	}
 
-	static private void adjustBikeAvailability(Scenario scenario) {
-		Random random = new Random(scenario.getConfig().global().getRandomSeed());
-		EBCConfigGroup ebcConfig = EBCConfigGroup.get(scenario.getConfig());
 
-		for (Person person : scenario.getPopulation().getPersons().values()) {
-			if (!person.getId().toString().contains("freight")) {
-				if (!person.getAttributes().getAttribute("bikeAvailability").equals("FOR_NONE")) {
-					if (random.nextDouble() > ebcConfig.getBikeAvailability()) {
-						person.getAttributes().putAttribute("bikeAvailability", "FOR_NONE");
-					}
-				}
-				if (!person.getAttributes().getAttribute("bikeAvailability").equals("FOR_NONE")) {
-						if (random.nextDouble() <= ebcConfig.getEBikeAvailability()) {
-							person.getAttributes().putAttribute("bikeAvailability", "EBIKE");
-							
-							for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
-								if (pe instanceof Leg) {
-									if (((Leg) pe).getMode() == "bike") {
-										((Leg) pe).setMode("ebike");
-									}
-								}	
-							}
-						}
-				}
-				if (!person.getAttributes().getAttribute("bikeAvailability").equals("FOR_NONE") &&  !person.getAttributes().getAttribute("bikeAvailability").equals("EBIKE")) {
-						if (random.nextDouble() <= ebcConfig.getSpedelecAvailability()) {
-							person.getAttributes().putAttribute("bikeAvailability", "SPEDELEC");
-							
-							for (PlanElement pe : person.getSelectedPlan().getPlanElements()) {
-								if (pe instanceof Leg) {
-									if (((Leg) pe).getMode() == "bike") {
-										((Leg) pe).setMode("spedelec");
-									}
-								}	
-							}
-						}
-				}
-			}
-		}
-	}
+static private void adjustBikeAvailability(Scenario scenario) {
+  Random random = new Random(scenario.getConfig().global().getRandomSeed());
+  double chance = 0.7; // Set the chance to 0.7
+
+  for (Person person : scenario.getPopulation().getPersons().values()) {
+    if (!person.getId().toString().contains("freight")) {
+      if (random.nextDouble() <= chance) {
+        person.getAttributes().putAttribute("bikeAvailability", "AVAILABLE");
+        person.getAttributes().putAttribute("ebikeAvailability", "AVAILABLE");
+        person.getAttributes().putAttribute("spedelecAvailability", "AVAILABLE");
+      } else {
+        person.getAttributes().putAttribute("bikeAvailability", "FOR_NONE");
+        person.getAttributes().putAttribute("ebikeAvailability", "FOR_NONE");
+        person.getAttributes().putAttribute("spedelecAvailability", "FOR_NONE");
+      }
+    }
+  }
+}
 
 	static public void configureController(Controler controller, CommandLine commandLine) {		
 
